@@ -10,10 +10,13 @@ $first_bg_color: #bbbbbb
 $second_bg_color: #999999
 $third_bg_color: #cccccc
 
+$shadow_color: #444444
+
 $red_suit_color: #bb0000
 $black_suit_color: #000000
 $card_background_color: $third_bg_color
 $card_highligh_bg_color: #ffffff
+$carpet_color: #226622
 
 $window_min_width: 800px
 $window_min_height: 600px
@@ -39,7 +42,10 @@ body
   padding: 0px
   min-width: $window_min_width
   min-height: $window_min_height
-  background-color: $first_bg_color
+  background-color: $third_bg_color
+  display: flex
+  justify-content: center
+  align-items: center
 
 @mixin box
   margin: 0px
@@ -52,8 +58,12 @@ body
   border: solid 10px $third_fg_color
   background-color: $third_bg_color
 
+@mixin box-shadow
+  box-shadow: 7px 7px 7px $shadow_color
+
 @mixin main_box
   @include box
+  @include box-shadow
   border-color: $first_fg_color
   margin-top: 1%
   margin-bottom: 1%
@@ -103,7 +113,6 @@ body
   div.card:hover p
     background-color: $card_highligh_bg_color
 
-
 #card_selection_box
   @include main_box
   height: 15%
@@ -118,8 +127,80 @@ body
     display: block
 
 
-#debug
+#welcome_box
   @include main_box
-  min-height: 3em
-  height: 20%
-  width: 100%
+  width: 85%
+  max-width: 1000px
+  max-height: 500px
+  text-align: center
+  padding: 10px
+  padding-top: 20px
+  padding-bottom: 20px
+  vertical-align: top
+  min-height: 320px
+
+
+  #welcome_subbox
+    width: 100%
+    padding: 20px
+    display: flex
+    justify-content: center
+    align-items: center
+
+    #login_box,#host_box
+      @include box
+      min-height: 250px
+      max-height: 400px
+      width: 49%
+      margin-left: auto
+      margin-right: auto
+      background-color: $first_bg_color
+      border-radius: 10px
+
+      h3
+        min-height: 2.5em
+
+      form
+        padding: 10px
+        //min-height: 150px
+        width: calc(100% - 30px)
+        border: $shadow_color 2px solid
+        @include box-shadow
+        margin-left: auto
+        margin-right: auto
+        margin-bottom: 10px
+        border-radius: 10px
+        background-color: $third_bg_color
+      //display: block
+      //float: left
+
+    label
+      width: 110px
+      padding-right: 5px
+    input
+      text-align: left
+      //width: 80%
+      max-width: calc(100% - 120px)
+
+
+    button
+      width: 95%
+      margin-top: 5px
+      border-radius: 15px
+
+    #login_box
+      $border_color_login: #603e3e
+      border-color: $border_color_login
+      button
+        color: $border_color_login
+    #host_box
+      $border_color_host: $carpet_color
+      border-color: $border_color_host
+      button
+        color: $border_color_host
+
+  p.note
+    font-size: 90%
+    font-style: italic
+    text-align: justify
+    padding: 10px

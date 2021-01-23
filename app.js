@@ -9,12 +9,14 @@ app.once('ready', () => {
   // Create a new window
   window = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 800,
+    minWidth: 800,
+    minHeight: 800,
     show: false,
     resizable: true
   })
 
-  window.setMenu(null)
+  // window.setMenu(null)
 
   // Load a URL in the window to the local index.html path
   window.loadURL(url.format({

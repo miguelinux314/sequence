@@ -5,7 +5,9 @@
   "main": "app.js",
   "dependencies": {
     "vue": "^2.6.12",
-    "vue-cli": "^2.9.6"
+    "vue-cli": "^2.9.6",
+    "json-socket": "*",
+    "sanitize-html": "^2.3.0"
   },
   "devDependencies": {
     "electron": "^3.0.2"

@@ -15,22 +15,46 @@
         delete module.exports
     </script>
     <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
-    <script src="./window.js" charset="utf-8"></script>
-
 </head>
 
 <body>
 <div id="main_container" class="container-fluid">
 
-<!--    <div id="login_box" class="box">-->
-<!--        Login box-->
-<!--    </div>-->
-
-<!--    <div id="debug">debug</div>-->
+    <div id="welcome_box" class="box">
+        <div><h2>Welcome to the Sequence Game</h2></div>
+        <div id="welcome_subbox">
+            <div id="login_box" class="box">
+                <h3>Connect to remote game</h3>
+                <form>
+                    <label for="login_host">Host</label><input type="text" id="login_host">
+                    <br/>
+                    <label for="login_port">Port</label><input type="text" id="login_port" value="8080"/>
+                    <br/>
+                    <button id="login_button">Log in</button>
+                </form>
+            </div>
+            <div id="host_box" class="box">
+                <h3>Host game</h3>
+                <form>
+                    <label for="local_port">Local port</label><input type="text" id="local_port" value="8080"/>
+                    <button id="host_button">Host game</button>
+                </form>
+            </div>
+        </div>
+        <p class="note">
+            Note: If hosting for players outside
+            your local network, you might need to configure
+            your router settings to allow connections to
+            this port.
+        </p>
+    </div>
 
     <div id="game_box"></div>
 
     <div id="card_selection_box"></div>
+
 </body>
+
+<script src="./window.js" charset="utf-8"></script>
 
 </html>
