@@ -19,13 +19,17 @@ body {
   padding: 0px;
   min-width: 800px;
   min-height: 600px;
-  background-color: #bbbbbb; }
+  background-color: #cccccc;
+  display: flex;
+  justify-content: center;
+  align-items: center; }
 
 #game_box {
   margin: 0px;
   padding: 0px;
   border: solid 5px #333333;
   background-color: #999999;
+  box-shadow: 7px 7px 7px #444444;
   border-color: #333333;
   margin-top: 1%;
   margin-bottom: 1%;
@@ -69,6 +73,7 @@ body {
   padding: 0px;
   border: solid 5px #333333;
   background-color: #999999;
+  box-shadow: 7px 7px 7px #444444;
   border-color: #333333;
   margin-top: 1%;
   margin-bottom: 1%;
@@ -108,19 +113,79 @@ body {
     #card_selection_box div.card p.spades, #card_selection_box div.card div.card.clubs {
       color: #000000; }
 
-#debug {
+#welcome_box {
   margin: 0px;
   padding: 0px;
   border: solid 5px #333333;
   background-color: #999999;
+  box-shadow: 7px 7px 7px #444444;
   border-color: #333333;
   margin-top: 1%;
   margin-bottom: 1%;
   margin-left: auto;
   margin-right: auto;
   vertical-align: middle;
-  min-height: 3em;
-  height: 20%;
-  width: 100%; }
+  width: 85%;
+  max-width: 1000px;
+  max-height: 500px;
+  text-align: center;
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  vertical-align: top;
+  min-height: 320px; }
+  #welcome_box #welcome_subbox {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center; }
+    #welcome_box #welcome_subbox #login_box, #welcome_box #welcome_subbox #host_box {
+      margin: 0px;
+      padding: 0px;
+      border: solid 5px #333333;
+      background-color: #999999;
+      min-height: 250px;
+      max-height: 400px;
+      width: 49%;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: #bbbbbb;
+      border-radius: 10px; }
+      #welcome_box #welcome_subbox #login_box h3, #welcome_box #welcome_subbox #host_box h3 {
+        min-height: 2.5em; }
+      #welcome_box #welcome_subbox #login_box form, #welcome_box #welcome_subbox #host_box form {
+        padding: 10px;
+        width: calc(100% - 30px);
+        border: #444444 2px solid;
+        box-shadow: 7px 7px 7px #444444;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        background-color: #cccccc; }
+    #welcome_box #welcome_subbox label {
+      width: 110px;
+      padding-right: 5px; }
+    #welcome_box #welcome_subbox input {
+      text-align: left;
+      max-width: calc(100% - 120px); }
+    #welcome_box #welcome_subbox button {
+      width: 95%;
+      margin-top: 5px;
+      border-radius: 15px; }
+    #welcome_box #welcome_subbox #login_box {
+      border-color: #603e3e; }
+      #welcome_box #welcome_subbox #login_box button {
+        color: #603e3e; }
+    #welcome_box #welcome_subbox #host_box {
+      border-color: #226622; }
+      #welcome_box #welcome_subbox #host_box button {
+        color: #226622; }
+  #welcome_box p.note {
+    font-size: 90%;
+    font-style: italic;
+    text-align: justify;
+    padding: 10px; }
 
 /*# sourceMappingURL=styles.css.map */

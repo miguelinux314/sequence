@@ -6,3 +6,5 @@ with rendering via electron.
 Use at your own discrection.
 
 License: CC-BY
+
+Author: Miguel Hernández-Cabronero (miguel.hernandez@uab.cat)
