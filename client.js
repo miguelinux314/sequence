@@ -5,32 +5,36 @@
  * 
  * @brief Client for the Sequence game
  */
-
+var net = require('net')
+var assert = require('assert');
+var EventEmitter = require('events').EventEmitter
 var game = require("./game.js")
+var server = require("./server.js")
 var JsonSocket = require('json-socket')
 
-const CLIENT_STATE_NOT_CONNECTED = 0
-const CLIENT_STATE_LOGGING_IN = 1
-const CLIENT_STATE_LOGGED_IN = 2
-const CLIENT_STATE_PLAYING = 3
+const STATE_NOT_CONNECTED = 0
+const STATE_LOGGING_IN = 1
+const STATE_LOGGED_IN = 2
+const STATE_PLAYING = 3
 
-class Client extends game.SequenceGame {
+class Client extends EventEmitter {
 
     constructor(host, port, player_name) {
-        super(null)
+        super()
+        this.game = null
         this.host = host
         this.port = port
         this.socket = new JsonSocket(new net.Socket()); //Decorate a standard net.Socket with JsonSocket
         this.socket.connect(this.port, this.host)
-        this.player = new Player("-1", player_name, this.socket)
-        this.status = CLIENT_STATE_NOT_CONNECTED
+        this.player = new server.Player("-1", player_name, this.socket)
+        this.status = STATE_NOT_CONNECTED
         var _this = this
         this.socket.on('connect', function () {
             _this.player.socket.on("message", function (message) {
                 console.log(message)
                 Client.handle_message(_this, _this.player, message)
             })
-            _this.status = CLIENT_STATE_LOGGING_IN
+            _this.status = STATE_LOGGING_IN
             _this.player.socket.sendMessage({"type": "login", "name": _this.player.name})
         })
     }
@@ -45,11 +49,11 @@ class Client extends game.SequenceGame {
             case "logged":
                 player.name = message["name"]
                 player.id = message["id"]
-                client.status = CLIENT_STATE_LOGGED_IN
+                client.status = STATE_LOGGED_IN
                 break
 
             case "game_started":
-                client.status = CLIENT_STATE_PLAYING
+                client.status = STATE_PLAYING
                 break
 
             case "wait":
@@ -65,3 +69,5 @@ class Client extends game.SequenceGame {
         }
     }
 }
+
+module.exports.Client = Client

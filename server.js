@@ -11,6 +11,7 @@ var assert = require('assert');
 var htmlSanitize = require('sanitize-html')
 var game = require("./game.js")
 var JsonSocket = require('json-socket')
+var EventEmitter = require('events').EventEmitter
 
 // Server status value
 const STATE_ACCEPTING_CONNECTIONS = 0
@@ -22,19 +23,25 @@ var local_port = 9999
 const min_port = 2048
 const max_port = 9999
 
-class Server extends game.SequenceGame {
+class Server extends EventEmitter {
     constructor(port) {
-        super(SequenceGame.get_random_card_assignment_xy())
+        super()
+        this.game = new game.SequenceGame(game.SequenceGame.get_random_card_assignment_xy())
+        this.deck = game.SequenceGame.shuffle(game.SequenceGame.get_deal_deck_cards())
+        this.dealt_cards = 0
 
         this.port = port
         this.id_to_player = {} // Dictionary of active players
         this.status = STATE_ACCEPTING_CONNECTIONS
         this.next_connection_id = 0
 
-        this.deck = SequenceGame.shuffle(SequenceGame.get_deal_deck_cards())
-        this.dealt_cards = 0
-
         this.server = net.createServer();
+        this.on("login",  this.process_login_message.bind(this))
+        this.on("request_start",  this.process_request_start_message.bind(this))
+        this.on("error",  this.process_error_message.bind(this))
+        this.on("bye",  this.process_bye_message.bind(this))
+        this.on("chat",  this.process_chat_message.bind(this))
+
         this.start()
     }
 
@@ -46,76 +53,75 @@ class Server extends game.SequenceGame {
             _this.next_connection_id += 1
             var id = _this.next_connection_id
             new_socket.on("message", function (message) {
-                Server.handle_player_message(_this, new_socket, message, id)
+                console.log("emitting msg of type "+ message["type"])
+                _this.emit(message["type"], _this, new_socket, message, id)
             })
         })
+        console.log("[watch] _this.port=" + _this.port)
         _this.server.listen(_this.port);
     }
 
-    static handle_player_message(server, socket, message, connection_id) {
-        console.log(message)
-        switch (message["type"]) {
-            case "login":
-                this.process_login_message(server, message, connection_id, socket)
-                break
-            case "request_start":
-                this.process_request_start_message(server, socket);
-                break
-            case "bye":
-                break
-            case "error":
-                // TODO Player exited. Clean and resshufle?
-                break
-            case "chat":
-                // TODO: implement chat forwarding
-                break
-        }
-    }
+    process_request_start_message(server, socket, message, id) {
+        console.log("server: ")
+        console.log(server)
 
-    static process_request_start_message(server, socket) {
-        if (server.status == STATE_ACCEPTING_CONNECTIONS) {
-            if (Object.keys(server.id_to_player).length >= min_players) {
-                server.begin_game()
+        if (this.status == STATE_ACCEPTING_CONNECTIONS) {
+            if (Object.keys(this.id_to_player).length >= game.min_players) {
+                this.begin_game()
             } else {
                 socket.sendMessage({
                     "type": "wait", "reason": "Not enough players"
                 })
             }
         } else {
-            Server.send_error_message(socket, "game previously started")
+            this.send_error_message(socket, "game previously started")
         }
     }
 
     /// Process a message of type "login"
-    static process_login_message(server, message, connection_id, socket) {
-        if (server.status == STATE_ACCEPTING_CONNECTIONS) {
+    process_login_message(server, socket, message, id) {
+        if (this.status == STATE_ACCEPTING_CONNECTIONS) {
             var requested_name = message["name"]
             if (requested_name.length == 0) {
-                requested_name = "Player #" + connection_id
+                requested_name = "Player #" + id
             }
             var new_player = new Player(
-                connection_id, htmlSanitize(requested_name), socket)
+                id, htmlSanitize(requested_name), socket)
 
-            server.id_to_player[new_player.id] = new_player
+            this.id_to_player[new_player.id] = new_player
             new_player.socket.sendMessage(
                 {
                     "type": "logged", "id": new_player.id,
                     "name": new_player.name,
                 })
             var len = Object.keys(server.id_to_player).length
-            if (len == max_players) {
+            if (len == game.max_players) {
                 // Automatically start game when max count players are reached
-                server.begin_game()
+                this.begin_game()
             }
         } else {
             Server.send_error_message(socket, "server not accepting connections")
         }
+
+        this.emit("players_changed", this.id_to_player)
+    }
+
+    process_bye_message(server, socket, message, id) {
+
+    }
+
+    process_chat_message(server, socket, message, id) {
+
+    }
+
+    process_error_message(server, socket, message, id) {
+
     }
 
     begin_game() {
-        assert(server.status == STATE_ACCEPTING_CONNECTIONS
-            && Object.keys(this.id_to_player).length >= min_players)
-        this.game = new SequenceGame(this.card_assignment)
+        assert(this.status == STATE_ACCEPTING_CONNECTIONS
+            && Object.keys(this.id_to_player).length >= game.min_players)
+        this.game = new game.SequenceGame(this.card_assignment)
         for (var id in this.id_to_player) {
             this.id_to_player[id].socket.sendMessage({
                 "type": "game_started",
@@ -123,6 +129,10 @@ class Server extends game.SequenceGame {
             })
         }
         this.status = STATE_PLAYING
+    }
+
+    get_player_count() {
+        return Object.keys(this.id_to_player).length
     }
 
     /// Return a dictionary indexed by player id and entries being names
@@ -134,7 +144,7 @@ class Server extends game.SequenceGame {
         return id_to_name
     }
 
-    static send_error_message(socket, message_string) {
+    send_error_message(socket, message_string) {
         socket.sendMessage({"type": "error", "msg": "ERROR: " + message_string})
     }
 }

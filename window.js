@@ -1,10 +1,10 @@
 /* global $ */
 
 var sequence_gui = require("./gui.js")
+var gui = new sequence_gui.GUI()
 
 // Run this function after the page has loaded
 $(() => {
-    var gui = new sequence_gui.GUI()
     gui.start()
 
     // // Random cards for now

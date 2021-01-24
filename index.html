@@ -22,10 +22,12 @@
 
     <div id="welcome_box" class="box">
         <div><h2>Welcome to the Sequence Game</h2></div>
+
         <div id="welcome_subbox">
             <div id="login_box" class="box">
-                <h3>Connect to remote game</h3>
+                <h3>Connect to game</h3>
                 <form>
+                    <label for="name_input">Your name</label><input type="text" id="name_input" value="Unknown"/>
                     <label for="login_host">Host</label><input type="text" id="login_host">
                     <br/>
                     <label for="login_port">Port</label><input type="text" id="login_port" value="8080"/>
@@ -35,10 +37,15 @@
             </div>
             <div id="host_box" class="box">
                 <h3>Host game</h3>
-                <form>
+                <form id="host_form">
                     <label for="local_port">Local port</label><input type="text" id="local_port" value="8080"/>
                     <button type=button id="host_button">Host game</button>
                 </form>
+                <div id="hosting_div">
+                    <h4><img class="loading_gif" src="./img/loading.gif"/>Waiting for players...</h4>
+                    <p id="player_count">0 players</p>
+                    <button type="button" id="start_now">Not enough players</input>
+                </div>
             </div>
         </div>
         <p class="note">

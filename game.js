@@ -7,6 +7,8 @@
  * @brief Logic of the Sequence game
  */
 
+var assert = require('assert');
+
 // Game constants
 const main_board_row_count = 6
 const suits = ["h", "s", "d", "c"]

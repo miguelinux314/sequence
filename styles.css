@@ -12,6 +12,9 @@ body {
   font: 200% Helvetica, sans-serif;
   color: #333333; }
 
+label {
+  margin-right: 5px; }
+
 #main_container {
   width: 100%;
   height: 100%;
@@ -23,6 +26,23 @@ body {
   display: flex;
   justify-content: center;
   align-items: center; }
+  #main_container input.wrong {
+    background-color: #cc8888; }
+  #main_container input.right {
+    background-color: #88cc88; }
+  #main_container input:disabled {
+    background-color: #bbbbbb;
+    color: #333333; }
+  #main_container button {
+    border-radius: 15px;
+    background-color: #bbbbbb; }
+  #main_container button:active {
+    background-color: #ffffff; }
+  #main_container button:focus {
+    outline: 0px; }
+  #main_container button:disabled {
+    background-color: #333333;
+    color: #bbbbbb; }
 
 #game_box {
   margin: 0px;
@@ -133,7 +153,9 @@ body {
   padding-top: 20px;
   padding-bottom: 20px;
   vertical-align: top;
-  min-height: 320px; }
+  min-height: 320px;
+  border: 0px;
+  border-radius: 10px; }
   #welcome_box #welcome_subbox {
     width: 100%;
     padding: 20px;
@@ -152,28 +174,25 @@ body {
       margin-right: auto;
       background-color: #bbbbbb;
       border-radius: 10px; }
-      #welcome_box #welcome_subbox #login_box h3, #welcome_box #welcome_subbox #host_box h3 {
-        min-height: 2.5em; }
       #welcome_box #welcome_subbox #login_box form, #welcome_box #welcome_subbox #host_box form {
         padding: 10px;
         width: calc(100% - 30px);
-        border: #444444 2px solid;
+        border: 0px;
         box-shadow: 7px 7px 7px #444444;
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 10px;
         border-radius: 10px;
         background-color: #cccccc; }
+      #welcome_box #welcome_subbox #login_box button, #welcome_box #welcome_subbox #host_box button {
+        width: 95%;
+        margin-top: 5px; }
     #welcome_box #welcome_subbox label {
       width: 110px;
       padding-right: 5px; }
     #welcome_box #welcome_subbox input {
       text-align: left;
       max-width: calc(100% - 120px); }
-    #welcome_box #welcome_subbox button {
-      width: 95%;
-      margin-top: 5px;
-      border-radius: 15px; }
     #welcome_box #welcome_subbox #login_box {
       border-color: #603e3e; }
       #welcome_box #welcome_subbox #login_box button {
@@ -182,6 +201,11 @@ body {
       border-color: #226622; }
       #welcome_box #welcome_subbox #host_box button {
         color: #226622; }
+    #welcome_box #welcome_subbox #hosting_div {
+      padding: 5px; }
+      #welcome_box #welcome_subbox #hosting_div img.loading_gif {
+        width: 100px;
+        display: inline-block; }
   #welcome_box p.note {
     font-size: 90%;
     font-style: italic;
