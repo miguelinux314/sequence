@@ -47,6 +47,21 @@ body
   justify-content: center
   align-items: center
 
+  input.wrong
+    background-color: #cc8888
+  input.right
+    background-color: #88cc88
+  button
+    border-radius: 15px
+    background-color: $first_bg_color
+  button:active
+    background-color: $card_highligh_bg_color
+  button:focus
+    outline: 0px
+  button:disabled
+    background-color: $first_fg_color
+    color: $first_bg_color
+
 @mixin box
   margin: 0px
   padding: 0px
@@ -164,15 +179,17 @@ body
         padding: 10px
         //min-height: 150px
         width: calc(100% - 30px)
-        border: $shadow_color 2px solid
+        border: $shadow_color 1px solid
         @include box-shadow
         margin-left: auto
         margin-right: auto
         margin-bottom: 10px
         border-radius: 10px
         background-color: $third_bg_color
-      //display: block
-      //float: left
+
+      button
+        width: 95%
+        margin-top: 5px
 
     label
       width: 110px
@@ -181,12 +198,6 @@ body
       text-align: left
       //width: 80%
       max-width: calc(100% - 120px)
-
-
-    button
-      width: 95%
-      margin-top: 5px
-      border-radius: 15px
 
     #login_box
       $border_color_login: #603e3e
