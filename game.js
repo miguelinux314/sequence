@@ -27,7 +27,8 @@ class SequenceGame {
         this.card_assignment = card_assignment
         // Pegs placed indexed by x-y (example ['0-12']), with values being
         // player ids
-        this.pegs_by_xy = {}
+
+        // this.pegs_by_xy = {}
     }
 
     /// Get the cards for all cards to be placed on the boardº1

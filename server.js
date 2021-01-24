@@ -23,6 +23,13 @@ var local_port = 9999
 const min_port = 2048
 const max_port = 9999
 
+/**
+ * Sequence game network server
+ *
+ * Exported .on() events:
+ *   - players_changed
+ *   - all valid message types
+ */
 class Server extends EventEmitter {
     constructor(port) {
         super()
@@ -36,11 +43,12 @@ class Server extends EventEmitter {
         this.next_connection_id = 0
 
         this.server = net.createServer();
-        this.on("login",  this.process_login_message.bind(this))
-        this.on("request_start",  this.process_request_start_message.bind(this))
-        this.on("error",  this.process_error_message.bind(this))
-        this.on("bye",  this.process_bye_message.bind(this))
-        this.on("chat",  this.process_chat_message.bind(this))
+        // Message handles
+        this.on("login", this.process_login_message.bind(this))
+        this.on("request_start", this.process_request_start_message.bind(this))
+        this.on("error", this.process_error_message.bind(this))
+        this.on("bye", this.process_bye_message.bind(this))
+        this.on("chat", this.process_chat_message.bind(this))
 
         this.start()
     }
@@ -53,18 +61,13 @@ class Server extends EventEmitter {
             _this.next_connection_id += 1
             var id = _this.next_connection_id
             new_socket.on("message", function (message) {
-                console.log("emitting msg of type "+ message["type"])
                 _this.emit(message["type"], _this, new_socket, message, id)
             })
         })
-        console.log("[watch] _this.port=" + _this.port)
         _this.server.listen(_this.port);
     }
 
     process_request_start_message(server, socket, message, id) {
-        console.log("server: ")
-        console.log(server)
-
         if (this.status == STATE_ACCEPTING_CONNECTIONS) {
             if (Object.keys(this.id_to_player).length >= game.min_players) {
                 this.begin_game()
@@ -80,6 +83,7 @@ class Server extends EventEmitter {
 
     /// Process a message of type "login"
     process_login_message(server, socket, message, id) {
+
         if (this.status == STATE_ACCEPTING_CONNECTIONS) {
             var requested_name = message["name"]
             if (requested_name.length == 0) {
@@ -91,9 +95,12 @@ class Server extends EventEmitter {
             this.id_to_player[new_player.id] = new_player
             new_player.socket.sendMessage(
                 {
-                    "type": "logged", "id": new_player.id,
+                    "type": "logged",
+                    "id": new_player.id,
                     "name": new_player.name,
                 })
+            this.emit("players_changed", this.id_to_player)
+
             var len = Object.keys(server.id_to_player).length
             if (len == game.max_players) {
                 // Automatically start game when max count players are reached
@@ -102,8 +109,6 @@ class Server extends EventEmitter {
         } else {
             Server.send_error_message(socket, "server not accepting connections")
         }
-
-        this.emit("players_changed", this.id_to_player)
     }
 
     process_bye_message(server, socket, message, id) {
@@ -119,16 +124,19 @@ class Server extends EventEmitter {
     }
 
     begin_game() {
+        console.log("[Server beginning game]")
         assert(this.status == STATE_ACCEPTING_CONNECTIONS
             && Object.keys(this.id_to_player).length >= game.min_players)
-        this.game = new game.SequenceGame(this.card_assignment)
-        for (var id in this.id_to_player) {
-            this.id_to_player[id].socket.sendMessage({
-                "type": "game_started",
-                "id_to_name": this.get_id_to_name()
-            })
+        console.log(this.game.card_assignment)
+        var msg = {
+            "type": "game_started",
+            "card_assignment": this.game.card_assignment,
+            "id_to_name": this.get_id_to_name(),
         }
-        this.status = STATE_PLAYING
+        for (var id in this.id_to_player) {
+            this.id_to_player[id].socket.sendMessage(msg)
+        }
+        console.log("d")
     }
 
     get_player_count() {

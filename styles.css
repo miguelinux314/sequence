@@ -44,95 +44,6 @@ label {
     background-color: #333333;
     color: #bbbbbb; }
 
-#game_box {
-  margin: 0px;
-  padding: 0px;
-  border: solid 5px #333333;
-  background-color: #999999;
-  box-shadow: 7px 7px 7px #444444;
-  border-color: #333333;
-  margin-top: 1%;
-  margin-bottom: 1%;
-  margin-left: auto;
-  margin-right: auto;
-  vertical-align: middle;
-  height: 80%;
-  width: 95%; }
-  #game_box div.card {
-    margin: 0px;
-    padding: 0px;
-    border: solid 5px #333333;
-    background-color: #999999;
-    float: left;
-    border: none;
-    background-color: #999999;
-    text-align: center;
-    display: flex;
-    padding: 5px;
-    width: 6.25%;
-    height: 16.6666%; }
-    #game_box div.card p {
-      border: 1px solid;
-      height: 100%;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 10px;
-      background: #cccccc;
-      user-select: none; }
-    #game_box div.card p.hearts, #game_box div.card div.card.diamonds {
-      color: #bb0000; }
-    #game_box div.card p.spades, #game_box div.card div.card.clubs {
-      color: #000000; }
-  #game_box div.card:hover p {
-    background-color: #ffffff; }
-
-#card_selection_box {
-  margin: 0px;
-  padding: 0px;
-  border: solid 5px #333333;
-  background-color: #999999;
-  box-shadow: 7px 7px 7px #444444;
-  border-color: #333333;
-  margin-top: 1%;
-  margin-bottom: 1%;
-  margin-left: auto;
-  margin-right: auto;
-  vertical-align: middle;
-  height: 15%;
-  width: 40%; }
-  #card_selection_box div.card {
-    margin: 0px;
-    padding: 0px;
-    border: solid 5px #333333;
-    background-color: #999999;
-    float: left;
-    border: none;
-    background-color: #999999;
-    text-align: center;
-    display: flex;
-    padding: 5px;
-    height: 100%;
-    width: 16.6666%;
-    margin-left: auto;
-    margin-right: auto;
-    display: block; }
-    #card_selection_box div.card p {
-      border: 1px solid;
-      height: 100%;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 10px;
-      background: #cccccc;
-      user-select: none; }
-    #card_selection_box div.card p.hearts, #card_selection_box div.card div.card.diamonds {
-      color: #bb0000; }
-    #card_selection_box div.card p.spades, #card_selection_box div.card div.card.clubs {
-      color: #000000; }
-
 #welcome_box {
   margin: 0px;
   padding: 0px;
@@ -211,5 +122,99 @@ label {
     font-style: italic;
     text-align: justify;
     padding: 10px; }
+
+#game_div {
+  width: 95%;
+  height: 95%; }
+  #game_div #game_box {
+    margin: 0px;
+    padding: 0px;
+    border: solid 5px #333333;
+    background-color: #999999;
+    box-shadow: 7px 7px 7px #444444;
+    border-color: #333333;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: middle;
+    border-radius: 5px;
+    height: 80%;
+    width: calc(100% - 20px);
+    margin-bottom: 15px; }
+    #game_div #game_box div.card {
+      margin: 0px;
+      padding: 0px;
+      border: solid 5px #333333;
+      background-color: #999999;
+      float: left;
+      border: none;
+      background-color: #999999;
+      text-align: center;
+      display: flex;
+      padding: 5px;
+      width: 6.25%;
+      height: 16.6666%; }
+      #game_div #game_box div.card p {
+        border: 1px solid;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        background: #cccccc;
+        user-select: none; }
+      #game_div #game_box div.card p.hearts, #game_div #game_box div.card div.card.diamonds {
+        color: #bb0000; }
+      #game_div #game_box div.card p.spades, #game_div #game_box div.card div.card.clubs {
+        color: #000000; }
+    #game_div #game_box div.card:hover p {
+      background-color: #ffffff; }
+  #game_div #card_selection_box {
+    margin: 0px;
+    padding: 0px;
+    border: solid 5px #333333;
+    background-color: #999999;
+    box-shadow: 7px 7px 7px #444444;
+    border-color: #333333;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: middle;
+    border-radius: 5px;
+    height: 15%;
+    width: 40%; }
+    #game_div #card_selection_box div.card {
+      margin: 0px;
+      padding: 0px;
+      border: solid 5px #333333;
+      background-color: #999999;
+      float: left;
+      border: none;
+      background-color: #999999;
+      text-align: center;
+      display: flex;
+      padding: 5px;
+      height: 100%;
+      width: 16.6666%;
+      margin-left: auto;
+      margin-right: auto;
+      display: block; }
+      #game_div #card_selection_box div.card p {
+        border: 1px solid;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        background: #cccccc;
+        user-select: none; }
+      #game_div #card_selection_box div.card p.hearts, #game_div #card_selection_box div.card div.card.diamonds {
+        color: #bb0000; }
+      #game_div #card_selection_box div.card p.spades, #game_div #card_selection_box div.card div.card.clubs {
+        color: #000000; }
 
 /*# sourceMappingURL=styles.css.map */

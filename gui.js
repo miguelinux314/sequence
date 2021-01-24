@@ -31,6 +31,7 @@ class GUI {
         this.hide_main_divs()
         this.show_welcome_div()
         this.server = null
+        this.game = null
 
         $("#login_host").on("change keydown paste input", this.login_form_changed.bind(this))
         $("#login_port").on("change keydown paste input", this.login_form_changed.bind(this))
@@ -48,13 +49,17 @@ class GUI {
     }
 
     click_welcome_login_button() {
+        assert(this.client == null)
         assert(this.status == STATE_WELCOME || this.status == STATE_HOST_EXPECTING_PLAYERS)
         var host = $("#login_host").prop("value").replace(/\s*/g, "")
         var port = parseInt($("#login_port").prop("value").replace(/[^0-9]*/g, ""))
         var name = $("#name_input").prop("value").trim()
-        console.log("[watch] [host, port, name]=" + [host, port, name])
         this.client = new client.Client(host, port, name)
-        console.log("[watch] this.client=" + this.client)
+        this.client.on("game_ready", this.start_game.bind(this))
+        $("#login_button").prop("disabled", true)
+        $("#name_input").prop("disabled", true)
+        $("#login_host").prop("disabled", true)
+        $("#login_port").prop("disabled", true)
     }
 
     click_welcome_host_button() {
@@ -63,25 +68,15 @@ class GUI {
             return
         }
         var local_port = parseInt($("#local_port").prop("value").replace(/[^0-9]*/g, ""))
-        console.log("[watch] local_port=" + local_port)
         this.server = new server.Server(local_port)
-        var _this = this
-        this.server.on("players_changed", function () {
-            var player_count = _this.server.get_player_count()
-            $("#player_count").text(player_count
-                + " player" + (player_count == 0 || player_count > 1 ? "s" : "")
-                + " connected")
-            if (player_count >= game.min_players) {
-                $("#start_now").text("Start now")
-                $("#start_now").fadeIn()
-            }
-        })
+        this.server.on("players_changed", this.handle_players_changed_message.bind(this))
 
         this.status = STATE_HOST_EXPECTING_PLAYERS
         $("#login_host").prop("value", "localhost")
         $("#login_host").prop("disabled", true)
         $("#login_port").prop("value", this.server.local_port)
         $("#login_port").prop("disabled", true)
+        $("#player_count").show()
 
         this.login_form_changed()
         this.host_form_changed()
@@ -90,11 +85,39 @@ class GUI {
     }
 
     click_start_now_button() {
-        if (this.status != STATE_HOST_EXPECTING_PLAYERS) {
-            console.log("Error: unexpected click of start button")
-            return
+        assert(this.status != STATE_PLAYING && this.status != STATE_FINISHED)
+        $("#welcome_box").fadeOut()
+        $("#start_now").prop("disabled", true)
+        this.server.begin_game()
+    }
+
+    start_game(message) {
+        if (this.game == null) {
+            console.log(message.card_assignment)
+            this.game = new game.SequenceGame(message.card_assignment)
         }
-        console.log("starting now...")
+        assert(this.game != null)
+        // TODO: continue HERE HERE HERE
+        // message
+        this.display_board_card_xy_assignment(message.card_assignment)
+        $("#welcome_box").hide()
+        $("#game_div").fadeIn()
+    }
+
+    handle_players_changed_message(id_to_player) {
+        var player_count = Object.keys(id_to_player).length
+        var player_count_str = player_count + " player"
+        if (player_count == 0 || player_count > 1) {
+            player_count_str += "s"
+        }
+        $("#player_count").text(player_count_str + " connected")
+        if (player_count >= game.min_players) {
+            $("#start_now").text("Start now")
+            $("#start_now").fadeIn()
+        }
+        if (player_count == game.max_players && this.server != null) {
+            $("#start_now").click()
+        }
     }
 
     host_form_changed() {
@@ -158,6 +181,10 @@ class GUI {
 
         if (!isNaN(port) && host_text && name && !(port < server.min_port || port > server.max_port)) {
             $("#login_button").prop("disabled", false)
+        }
+
+        if (this.client != null) {
+            $("#login_button").prop("disabled", true)
         }
     }
 

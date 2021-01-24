@@ -2,7 +2,7 @@
  * @file client.js
  * @author Miguel Hernández Cabronero <miguel.hernandez@uab.cat>
  * @date 24/01/2021
- * 
+ *
  * @brief Client for the Sequence game
  */
 var net = require('net')
@@ -28,45 +28,46 @@ class Client extends EventEmitter {
         this.socket.connect(this.port, this.host)
         this.player = new server.Player("-1", player_name, this.socket)
         this.status = STATE_NOT_CONNECTED
+        this.on("logged_message", this.handle_logged_message.bind(this))
+        this.on("game_started", this.handle_game_started_message.bind(this))
+        this.on("wait", this.handle_wait_message.bind(this))
+        this.on("chat", this.handle_chat_message.bind(this))
+        this.on("error", this.handle_error_message.bind(this))
         var _this = this
         this.socket.on('connect', function () {
             _this.player.socket.on("message", function (message) {
-                console.log(message)
-                Client.handle_message(_this, _this.player, message)
+                _this.emit(message["type"], _this, _this.player, message)
             })
             _this.status = STATE_LOGGING_IN
             _this.player.socket.sendMessage({"type": "login", "name": _this.player.name})
         })
     }
 
-    /// Request game start to the sever
-    request_game_start() {
-        this.socket.sendMessage({"type": "request_start"})
+    handle_logged_message(client, player, message) {
+        player.name = message["name"]
+        player.id = message["id"]
+        client.status = STATE_LOGGED_IN
     }
 
-    static handle_message(client, player, message) {
-        switch (message["type"]) {
-            case "logged":
-                player.name = message["name"]
-                player.id = message["id"]
-                client.status = STATE_LOGGED_IN
-                break
+    handle_game_started_message(client, player, message) {
+        client.status = STATE_PLAYING
+        console.log("emitting client's game_started signal")
+        console.log("message:")
+        console.log(message)
+        this.emit("game_ready", message)
+        console.log("emitted client's game_started signal")
+    }
 
-            case "game_started":
-                client.status = STATE_PLAYING
-                break
+    handle_wait_message(client, player, message) {
+        // Do nothing
+    }
 
-            case "wait":
-                break
+    handle_chat_message(client, player, message) {
+        // TODO: implement chat
+    }
 
-            case "chat":
-                // TODO: implement chat
-                break
-
-            case "error":
-                // TODO: disconnect and show some message
-                break
-        }
+    handle_error_message(client, player, message) {
+        // TODO: disconnect and show some message
     }
 }
 
