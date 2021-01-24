@@ -36,6 +36,8 @@ class Server extends EventEmitter {
         this.game = new game.SequenceGame(game.SequenceGame.get_random_card_assignment_xy())
         this.deck = game.SequenceGame.shuffle(game.SequenceGame.get_deal_deck_cards())
         this.dealt_cards = 0
+        console.log("DECK <<<<< ")
+        console.log(this.deck)
 
         this.port = port
         this.id_to_player = {} // Dictionary of active players
@@ -136,7 +138,13 @@ class Server extends EventEmitter {
         for (var id in this.id_to_player) {
             this.id_to_player[id].socket.sendMessage(msg)
         }
-        console.log("d")
+
+        for (var i = 0; i < game.cards_in_hand; i++) {
+            for (var id in this.id_to_player) {
+                this.id_to_player[id].deal_card(this.deck[this.dealt_cards])
+                this.dealt_cards++
+            }
+        }
     }
 
     get_player_count() {
@@ -167,7 +175,21 @@ class Player {
         // JsonSocket with the Player
         this.socket = json_socket
         // Cards in hand
-        this.card_code_list = []
+        this.hand_code_list = []
+        // Includes already used
+        this.all_cards_dealt = []
+    }
+
+    deal_card(card_code) {
+        console.log("Client pushing " + card_code)
+        
+        this.hand_code_list.push(card_code)
+        this.all_cards_dealt.push(card_code)
+
+        this.socket.sendMessage({
+            "type": "card_dealt",
+            "card_code": card_code,
+        })
     }
 }
 

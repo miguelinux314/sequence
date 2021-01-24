@@ -56,6 +56,7 @@ class GUI {
         var name = $("#name_input").prop("value").trim()
         this.client = new client.Client(host, port, name)
         this.client.on("game_ready", this.start_game.bind(this))
+        this.client.on("hand_updated", this.update_hand.bind(this))
         $("#login_button").prop("disabled", true)
         $("#name_input").prop("disabled", true)
         $("#login_host").prop("disabled", true)
@@ -93,15 +94,32 @@ class GUI {
 
     start_game(message) {
         if (this.game == null) {
-            console.log(message.card_assignment)
             this.game = new game.SequenceGame(message.card_assignment)
         }
         assert(this.game != null)
-        // TODO: continue HERE HERE HERE
-        // message
         this.display_board_card_xy_assignment(message.card_assignment)
         $("#welcome_box").hide()
         $("#game_div").fadeIn()
+        this.status = STATE_PLAYING
+    }
+
+    update_hand(card_list) {
+        assert(this.status == STATE_PLAYING)
+        var s = ""
+        var hand_id_list = []
+        for (var i in card_list) {
+            var hand_id = "hand_" + i
+            hand_id_list.push("#" + hand_id)
+            var div_html = GUI.get_card_div_html(hand_id)
+            s += div_html + "\n"
+        }
+        $("#card_selection_box").html(s)
+        console.log("@@@@@@@")
+        console.log(card_list)
+        console.log("@@@@@@@")
+        for (var i in hand_id_list) {
+            this.display_card(hand_id_list[i], card_list[i])
+        }
     }
 
     handle_players_changed_message(id_to_player) {
@@ -193,7 +211,7 @@ class GUI {
         var s = "";
         for (var i = 0; i < game.main_board_row_count; i++) {
             for (var j = 0; j < game.main_board_column_count; j++) {
-                s += GUI.get_card_div(GUI.get_card_id_from_xy(j, i)) + "\n"
+                s += GUI.get_card_div_html(GUI.get_card_id_from_xy(j, i)) + "\n"
             }
         }
         $("#game_box").html(s)
@@ -206,33 +224,39 @@ class GUI {
             var x = coordinates[0]
             var y = coordinates[1]
             var id_string = "#" + GUI.get_card_id_from_xy(x, y)
-            var card_name
-            var card_class
-            switch (coordinates_to_cardcode[coordinates][0]) {
-                case "h":
-                    card_name = "&hearts;"
-                    card_class = "hearts"
-                    break
-                case "s":
-                    card_name = "&spades;"
-                    card_class = "spades"
-                    break
-                case "d":
-                    card_name = "&diams;"
-                    card_class = "diamonds"
-                    break
-                case "c":
-                    card_name = "&clubs;"
-                    card_class = "clubs"
-                    break
-                default:
-                    card_name = "[ERROR]"
-                    card_class = "[ERROR]"
-            }
-            card_name += coordinates_to_cardcode[coordinates][1]
-            $(id_string + ">p").html(card_name)
-            $(id_string + ">p").addClass(card_class)
+            var card_code = coordinates_to_cardcode[coordinates]
+            this.display_card(id_string, card_code)
         }
+    }
+
+    display_card(card_id, card_code) {
+        var card_name
+        var card_class
+        switch (card_code[0]) {
+            case "h":
+                card_name = "&hearts;"
+                card_class = "hearts"
+                break
+            case "s":
+                card_name = "&spades;"
+                card_class = "spades"
+                break
+            case "d":
+                card_name = "&diams;"
+                card_class = "diamonds"
+                break
+            case "c":
+                card_name = "&clubs;"
+                card_class = "clubs"
+                break
+            default:
+                card_name = "[ERROR]"
+                card_class = "[ERROR]"
+        }
+
+        card_name += card_code[1]
+        $(card_id + ">p").html(card_name)
+        $(card_id + ">p").addClass(card_class)
     }
 
     hide_main_divs() {
@@ -243,7 +267,7 @@ class GUI {
         $("#welcome_box").fadeIn(2000)
     }
 
-    static get_card_div(id) {
+    static get_card_div_html(id) {
         return "<div id=\"" + id + "\" class=\"card\"><p>def</p></div>";
     }
 

@@ -10,15 +10,16 @@
 var assert = require('assert');
 
 // Game constants
-const main_board_row_count = 6
+const main_board_row_count = 8
+const main_board_column_count = 11
 const suits = ["h", "s", "d", "c"]
-const suit_min = 1
-const suit_max = 10
-const figures_no_joker = ["q", "k"]
+const suit_min = 2
+const suit_max = 9
+const figures_no_joker = ["Q", "K", "A"]
 const joker_codes = ["j1", "j2"]
-const main_board_column_count = 16
 const min_players = 2
 const max_players = 3
+const cards_in_hand = 6
 
 // An abstract game of sequence, using no GUI or socket communication
 class SequenceGame {
@@ -39,11 +40,15 @@ class SequenceGame {
                 for (var i = suit_min; i <= suit_max; i++) {
                     code_list.push(suits[s] + i)
                 }
-                for (var fig in figures_no_joker) {
-                    code_list.push(suits[s] + fig)
+                for (var i in figures_no_joker) {
+                    code_list.push(suits[s] + figures_no_joker[i])
                 }
             }
         }
+        console.log("$$$$$")
+        console.log(code_list)
+        console.log("[watch] code_list.length=" + code_list.length)
+        console.log("[watch] main_board_column_count * main_board_row_count=" + main_board_column_count * main_board_row_count)
         assert(code_list.length == main_board_column_count * main_board_row_count)
         return code_list
     }
@@ -107,3 +112,4 @@ module.exports.joker_codes = joker_codes
 module.exports.main_board_column_count = main_board_column_count
 module.exports.min_players = min_players
 module.exports.max_players = max_players
+module.exports.cards_in_hand = cards_in_hand

@@ -17,6 +17,10 @@ const STATE_LOGGING_IN = 1
 const STATE_LOGGED_IN = 2
 const STATE_PLAYING = 3
 
+/**
+ * Emits on:
+ *   - hand_updated
+ */
 class Client extends EventEmitter {
 
     constructor(host, port, player_name) {
@@ -30,6 +34,7 @@ class Client extends EventEmitter {
         this.status = STATE_NOT_CONNECTED
         this.on("logged_message", this.handle_logged_message.bind(this))
         this.on("game_started", this.handle_game_started_message.bind(this))
+        this.on("card_dealt", this.handle_card_dealt_message.bind(this))
         this.on("wait", this.handle_wait_message.bind(this))
         this.on("chat", this.handle_chat_message.bind(this))
         this.on("error", this.handle_error_message.bind(this))
@@ -51,11 +56,15 @@ class Client extends EventEmitter {
 
     handle_game_started_message(client, player, message) {
         client.status = STATE_PLAYING
-        console.log("emitting client's game_started signal")
-        console.log("message:")
-        console.log(message)
         this.emit("game_ready", message)
-        console.log("emitted client's game_started signal")
+    }
+
+    handle_card_dealt_message(client, player, message) {
+        console.log(message)
+        assert(client.status == STATE_PLAYING)
+        player.deal_card(message["card_code"])
+        console.log(player.hand_code_list)
+        this.emit("hand_updated", player.hand_code_list)
     }
 
     handle_wait_message(client, player, message) {
