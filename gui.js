@@ -114,9 +114,6 @@ class GUI {
             s += div_html + "\n"
         }
         $("#card_selection_box").html(s)
-        console.log("@@@@@@@")
-        console.log(card_list)
-        console.log("@@@@@@@")
         for (var i in hand_id_list) {
             this.display_card(hand_id_list[i], card_list[i])
         }

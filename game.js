@@ -45,10 +45,6 @@ class SequenceGame {
                 }
             }
         }
-        console.log("$$$$$")
-        console.log(code_list)
-        console.log("[watch] code_list.length=" + code_list.length)
-        console.log("[watch] main_board_column_count * main_board_row_count=" + main_board_column_count * main_board_row_count)
         assert(code_list.length == main_board_column_count * main_board_row_count)
         return code_list
     }

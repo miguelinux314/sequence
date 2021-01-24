@@ -60,10 +60,8 @@ class Client extends EventEmitter {
     }
 
     handle_card_dealt_message(client, player, message) {
-        console.log(message)
         assert(client.status == STATE_PLAYING)
         player.deal_card(message["card_code"])
-        console.log(player.hand_code_list)
         this.emit("hand_updated", player.hand_code_list)
     }
 

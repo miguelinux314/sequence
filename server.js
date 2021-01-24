@@ -36,8 +36,6 @@ class Server extends EventEmitter {
         this.game = new game.SequenceGame(game.SequenceGame.get_random_card_assignment_xy())
         this.deck = game.SequenceGame.shuffle(game.SequenceGame.get_deal_deck_cards())
         this.dealt_cards = 0
-        console.log("DECK <<<<< ")
-        console.log(this.deck)
 
         this.port = port
         this.id_to_player = {} // Dictionary of active players
@@ -129,7 +127,6 @@ class Server extends EventEmitter {
         console.log("[Server beginning game]")
         assert(this.status == STATE_ACCEPTING_CONNECTIONS
             && Object.keys(this.id_to_player).length >= game.min_players)
-        console.log(this.game.card_assignment)
         var msg = {
             "type": "game_started",
             "card_assignment": this.game.card_assignment,
@@ -139,12 +136,17 @@ class Server extends EventEmitter {
             this.id_to_player[id].socket.sendMessage(msg)
         }
 
-        for (var i = 0; i < game.cards_in_hand; i++) {
-            for (var id in this.id_to_player) {
+
+        for (var id in this.id_to_player) {
+            for (var i = 0; i < game.cards_in_hand; i++) {
+                console.log("[watch] dealing this.deck[this.dealt_cards]=" + this.deck[this.dealt_cards])
                 this.id_to_player[id].deal_card(this.deck[this.dealt_cards])
                 this.dealt_cards++
+                console.log("[watch] this.dealt_cards=" + this.dealt_cards)
             }
         }
+
+        this.status = STATE_PLAYING
     }
 
     get_player_count() {
@@ -181,8 +183,6 @@ class Player {
     }
 
     deal_card(card_code) {
-        console.log("Client pushing " + card_code)
-        
         this.hand_code_list.push(card_code)
         this.all_cards_dealt.push(card_code)
 
