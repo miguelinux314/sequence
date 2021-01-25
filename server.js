@@ -33,8 +33,14 @@ const max_port = 9999
 class Server extends EventEmitter {
     constructor(port) {
         super()
+
+        const expected_length = 2*(4*(game.suit_max-game.suit_min+1+game.figures_no_joker.length) + (game.joker_codes.length*2))
+
         this.game = new game.SequenceGame(game.SequenceGame.get_random_card_assignment_xy())
-        this.deck = game.SequenceGame.shuffle(game.SequenceGame.get_deal_deck_cards())
+        var all_cards = game.SequenceGame.get_deal_deck_cards()
+        assert(all_cards.length == expected_length)
+        this.deck = game.SequenceGame.shuffle(all_cards)
+        assert(this.deck.length == expected_length)
         this.dealt_cards = 0
 
         this.port = port
@@ -139,10 +145,8 @@ class Server extends EventEmitter {
 
         for (var id in this.id_to_player) {
             for (var i = 0; i < game.cards_in_hand; i++) {
-                console.log("[watch] dealing this.deck[this.dealt_cards]=" + this.deck[this.dealt_cards])
-                this.id_to_player[id].deal_card(this.deck[this.dealt_cards])
+                this.id_to_player[id].deal_card(this.deck[this.dealt_cards % this.deck.length])
                 this.dealt_cards++
-                console.log("[watch] this.dealt_cards=" + this.dealt_cards)
             }
         }
 

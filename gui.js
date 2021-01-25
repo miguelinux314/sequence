@@ -246,11 +246,16 @@ class GUI {
                 card_name = "&clubs;"
                 card_class = "clubs"
                 break
+            case "j":
+                card_name = "J"
+                card_class = "joker" + card_code[1]
+                break
             default:
                 card_name = "[ERROR]"
                 card_class = "[ERROR]"
         }
 
+        card_name = "<span class='card_class_text'>" + card_name + "</span>"
         card_name += card_code[1]
         $(card_id + ">p").html(card_name)
         $(card_id + ">p").addClass(card_class)

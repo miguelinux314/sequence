@@ -14,9 +14,11 @@ $shadow_color: #444444
 
 $red_suit_color: #bb0000
 $black_suit_color: #000000
-$card_background_color: $third_bg_color
+$card_background_color: #dddddd
 $card_highligh_bg_color: #ffffff
 $carpet_color: #226622
+$joker1_color: green
+$joker2_color: #5555ff
 
 $window_min_width: 800px
 $window_min_height: 600px
@@ -102,7 +104,7 @@ label
   @include box
   float: left
   border: none
-  background-color: $second_bg_color
+  background-color: rgba(0,0,0,0)
   text-align: center
   display: flex
   padding: 5px
@@ -117,12 +119,23 @@ label
     border-radius: 10px
     background: $card_background_color
     user-select: none
+    font-weight: bold
+    font-size: 140%
+
+  span.card_class_text
+    font-size: 140%
 
   p.hearts, div.card.diamonds
     color: $red_suit_color
 
   p.spades, div.card.clubs
     color: $black_suit_color
+
+  p.joker1
+    color: $joker1_color
+
+  p.joker2
+    color: $joker2_color
 
 
 #welcome_box
@@ -218,6 +231,7 @@ label
     height: 80%
     width: calc(100% - 20px)
     margin-bottom: 15px
+    background-color: $carpet_color
 
     div.card
       @include card
@@ -226,14 +240,11 @@ label
       // 100/8
       height: 12.5%
 
-    div.card:hover p
-      background-color: $card_highligh_bg_color
-
   #card_selection_box
     @include main_box
     border-radius: 5px
-    height: 15%
-    width: 40%
+    height: 10%
+    width: 50%
 
     div.card
       @include card

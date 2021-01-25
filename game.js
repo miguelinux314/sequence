@@ -71,8 +71,12 @@ class SequenceGame {
     /// Return the (unshuffled) list of cards to be dealt to players
     static get_deal_deck_cards() {
         var code_list = SequenceGame.get_board_deck_cards()
+
         for (var i = 0; i < 2; i++) {
-            code_list.push(joker_codes * 2)
+            for (var j in joker_codes) {
+                code_list.push(joker_codes[j])
+                code_list.push(joker_codes[j])
+            }
         }
         return code_list
     }
