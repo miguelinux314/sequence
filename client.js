@@ -20,6 +20,7 @@ const STATE_PLAYING = 3
 /**
  * Emits on:
  *   - hand_updated
+ *   - game_ready
  */
 class Client extends EventEmitter {
 

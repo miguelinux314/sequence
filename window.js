@@ -1,11 +1,21 @@
 /* global $ */
 
 var sequence_gui = require("./gui.js")
+
+// Configuration
+const quick_start = true
+// END configuration
+
 var gui = new sequence_gui.GUI()
 
 // Run this function after the page has loaded
 $(() => {
     gui.start()
+
+    if (quick_start) {
+        $("#host_button").click()
+        $("#login_button").click()
+    }
 
     // // Random cards for now
     // var card_assignment = SequenceGame.get_random_card_assignment_xy()

@@ -19,7 +19,7 @@ const STATE_PLAYING = 1
 const STATE_FINISHED = 2
 
 // Default game configuration
-var local_port = 9999
+var default_port = 9999
 const min_port = 2048
 const max_port = 9999
 
@@ -202,6 +202,6 @@ module.exports.Player = Player
 module.exports.STATE_ACCEPTING_CONNECTION = STATE_ACCEPTING_CONNECTIONS
 module.exports.STATE_PLAYING = STATE_PLAYING
 module.exports.STATE_FINISHED = STATE_FINISHED
-module.exports.local_port = local_port
+module.exports.local_port = default_port
 module.exports.min_port = min_port
 module.exports.max_port = max_port

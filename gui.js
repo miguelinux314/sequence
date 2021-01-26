@@ -110,7 +110,7 @@ class GUI {
         for (var i in card_list) {
             var hand_id = "hand_" + i
             hand_id_list.push("#" + hand_id)
-            var div_html = GUI.get_card_div_html(hand_id)
+            var div_html = GUI.get_card_div_html(hand_id, false)
             s += div_html + "\n"
         }
         $("#card_selection_box").html(s)
@@ -208,7 +208,7 @@ class GUI {
         var s = "";
         for (var i = 0; i < game.main_board_row_count; i++) {
             for (var j = 0; j < game.main_board_column_count; j++) {
-                s += GUI.get_card_div_html(GUI.get_card_id_from_xy(j, i)) + "\n"
+                s += GUI.get_card_div_html(GUI.get_card_id_from_xy(j, i), true) + "\n"
             }
         }
         $("#game_box").html(s)
@@ -257,8 +257,44 @@ class GUI {
 
         card_name = "<span class='card_class_text'>" + card_name + "</span>"
         card_name += card_code[1]
-        $(card_id + ">p").html(card_name)
-        $(card_id + ">p").addClass(card_class)
+        var q = card_id + " p.card_label"
+        $(q).html(card_name)
+        $(card_id).addClass(card_class)
+        var cardcode_class = "cardcode_" + card_code
+        $(card_id).addClass(cardcode_class)
+        $(card_id).hover(function () {
+                var same_cardcode
+                if (game.joker_codes.includes(card_code)) {
+                    same_cardcode = $("div.card")
+                } else {
+                    same_cardcode = $(".cardcode_" + card_code)
+                }
+                var highlighted_count = 0
+                var is_hand_card = ($(card_id).find("div.peg").length == 0)
+
+                for (var i = 0; i < same_cardcode.length; i++) {
+                    if ($("#" + same_cardcode[i].id).find("div.peg").length > 0) {
+                        if ($("#" + same_cardcode[i].id).find("div.peg.taken").length == 0) {
+                            $("#" + same_cardcode[i].id).addClass("highlighted_hover")
+                            highlighted_count += 1
+                        }
+                    }
+                }
+
+                if (is_hand_card) {
+                    if (highlighted_count == 0) {
+                        // Hand card: highlight only if more than one card was selectable
+                        $(card_id).removeClass("highlighted_hover")
+                    } else {
+                        $(card_id).addClass("highlighted_hover")
+                    }
+                } else if ($(card_id).find("div.peg.taken").lenght > 0) {
+                    $(card_id).removeClass("highlighted_hover")
+                }
+            },
+            function () {
+                $("div.card").removeClass("highlighted_hover")
+            })
     }
 
     hide_main_divs() {
@@ -269,8 +305,15 @@ class GUI {
         $("#welcome_box").fadeIn(2000)
     }
 
-    static get_card_div_html(id) {
-        return "<div id=\"" + id + "\" class=\"card\"><p>def</p></div>";
+    static get_card_div_html(id, show_peg) {
+        var s = "<div id='" + id + "' class='card'>" +
+            "<div class='card_contents'>" +
+            "<p class='card_label'>def</p>";
+        if (show_peg) {
+            s += "<div class='peg'/>"
+        }
+        s += "</div></div>";
+        return s
     }
 
     static get_card_id_from_xy(x, y) {

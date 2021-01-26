@@ -2,6 +2,8 @@
  * Source to styles.css used in the application
  */
 
+$font-stack: Helvetica, sans-serif
+
 $first_fg_color: #333333
 $second_fg_color: #4488ee
 $third_fg_color: #88ffaa
@@ -12,6 +14,9 @@ $third_bg_color: #cccccc
 
 $shadow_color: #444444
 
+$window_min_width: 800px
+$window_min_height: 600px
+
 $red_suit_color: #bb0000
 $black_suit_color: #000000
 $card_background_color: #dddddd
@@ -20,10 +25,10 @@ $carpet_color: #226622
 $joker1_color: green
 $joker2_color: #5555ff
 
-$window_min_width: 800px
-$window_min_height: 600px
+$player_1_color: #ac8bff
+$player_2_color: #90beeb
+$player_3_color: #fea900
 
-$font-stack: Helvetica, sans-serif
 
 html
   margin: 0px
@@ -106,36 +111,89 @@ label
   border: none
   background-color: rgba(0,0,0,0)
   text-align: center
-  display: flex
   padding: 5px
+  display: flex
 
-  p
-    border: 1px solid
+  div.card_contents
+    border: 0px
     height: 100%
     width: 100%
-    display: flex
-    justify-content: center
-    align-items: center
+    vertical-align: middle
     border-radius: 10px
-    background: $card_background_color
+    box-shadow: 5px 5px 2px
     user-select: none
-    font-weight: bold
-    font-size: 140%
 
-  span.card_class_text
-    font-size: 140%
+    p.card_label
+      font-weight: bold
+      font-size: 140%
+      display: block
+      width: 100%
+      margin: 0px
+      line-height: 120%
 
-  p.hearts, div.card.diamonds
-    color: $red_suit_color
+      span.card_class_text
+        margin: 0px
+        font-size: 140%
 
-  p.spades, div.card.clubs
-    color: $black_suit_color
+    div.peg
+      width: 20px
+      height: 20px
+      border-radius: 50%
+      margin-left: auto
+      margin-right: auto
+      margin-top: 0
+      margin-bottom: 10%
+      background-color: $first_bg_color
+      box-shadow: inset 3px 3px 5px $shadow_color
 
-  p.joker1
-    color: $joker1_color
+    div.peg.taken
+      box-shadow: 2px 2px 2px $shadow_color
+      background-color: black
 
-  p.joker2
-    color: $joker2_color
+    div.peg.player1
+      background-color: $player_1_color
+
+    div.peg.player2
+      background-color: $player_2_color
+
+    div.peg.player3
+      background-color: $player_3_color
+
+  div.card_contents
+    background-color: $card_background_color
+
+@mixin highlighted_card
+  div.card_contents
+    cursor: pointer
+    background-color: $card_highligh_bg_color
+    position: relative
+    top: -3px
+    left: -3px
+    box-shadow: 10px 10px 5px $shadow_color
+
+div.card.hearts, div.card.diamonds
+  div.card_contents
+    border-color: $red_suit_color
+    p.card_label
+      color: $red_suit_color
+
+div.card.spades, div.card.clubs
+  div.card_contents
+    border-color: $black_suit_color
+    p.card_label
+      color: $black_suit_color
+
+div.card.joker1
+  div.card_contents
+    border-color: $joker1_color
+    p.card_label
+      color: $joker1_color
+
+div.card.joker2
+  div.card_contents
+    border-color: $joker2_color
+    p.card_label
+      color: $joker2_color
 
 
 #welcome_box
@@ -227,11 +285,12 @@ label
 
   #game_box
     @include main_box
-    border-radius: 5px
+    border-radius: 20px
     height: 80%
     width: calc(100% - 20px)
     margin-bottom: 15px
     background-color: $carpet_color
+    border: 10px solid $carpet_color
 
     div.card
       @include card
@@ -239,6 +298,9 @@ label
       width: 9.05%
       // 100/8
       height: 12.5%
+
+    div.card.highlighted_hover
+      @include highlighted_card
 
   #card_selection_box
     @include main_box
@@ -254,3 +316,11 @@ label
       margin-left: auto
       margin-right: auto
       display: block
+
+      div.card_contents
+        p.card_label
+          line-height: 200%
+          margin-top: 0px
+
+    div.card.highlighted_hover
+      @include highlighted_card
