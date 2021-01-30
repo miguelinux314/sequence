@@ -262,39 +262,72 @@ class GUI {
         $(card_id).addClass(card_class)
         var cardcode_class = "cardcode_" + card_code
         $(card_id).addClass(cardcode_class)
+
+        var is_hand_card = ($(card_id).find("div.peg").length == 0)
+
+        // All card get some hover
         $(card_id).hover(function () {
-                var same_cardcode
-                if (game.joker_codes.includes(card_code)) {
-                    same_cardcode = $("div.card")
-                } else {
-                    same_cardcode = $(".cardcode_" + card_code)
-                }
-                var highlighted_count = 0
-                var is_hand_card = ($(card_id).find("div.peg").length == 0)
+            var same_cardcode
+            if (game.joker_codes.includes(card_code)) {
+                same_cardcode = $("div.card")
+            } else {
+                same_cardcode = $(".cardcode_" + card_code)
+            }
+            var highlighted_count = 0
 
-                for (var i = 0; i < same_cardcode.length; i++) {
-                    if ($("#" + same_cardcode[i].id).find("div.peg").length > 0) {
-                        if ($("#" + same_cardcode[i].id).find("div.peg.taken").length == 0) {
-                            $("#" + same_cardcode[i].id).addClass("highlighted_hover")
-                            highlighted_count += 1
-                        }
+            for (var i = 0; i < same_cardcode.length; i++) {
+                if ($("#" + same_cardcode[i].id).find("div.peg").length > 0) {
+                    if ($("#" + same_cardcode[i].id).find("div.peg.taken").length == 0) {
+                        $("#" + same_cardcode[i].id).addClass("highlighted_hover")
+                        highlighted_count += 1
                     }
                 }
+            }
 
-                if (is_hand_card) {
-                    if (highlighted_count == 0) {
-                        // Hand card: highlight only if more than one card was selectable
-                        $(card_id).removeClass("highlighted_hover")
-                    } else {
-                        $(card_id).addClass("highlighted_hover")
-                    }
-                } else if ($(card_id).find("div.peg.taken").lenght > 0) {
+            if (is_hand_card) {
+                if (highlighted_count == 0) {
+                    // Hand card: highlight only if more than one card was selectable
                     $(card_id).removeClass("highlighted_hover")
+                } else {
+                    $(card_id).addClass("highlighted_hover")
                 }
-            },
-            function () {
-                $("div.card").removeClass("highlighted_hover")
+            } else if ($(card_id).find("div.peg.taken").lenght > 0) {
+                $(card_id).removeClass("highlighted_hover")
+            }
+        },
+        function () {
+            $("div.card").removeClass("highlighted_hover")
+        })
+
+        if (is_hand_card) {
+            // Hand cards become draggable
+            $(card_id).draggable({
+                start: function () {
+
+                },
+                stop: function () {
+                    $(card_id).animate({
+                        top: "0px",
+                        left: "0px"
+                    }, 250);
+                },
             })
+        } else {
+            // Board cards become droppable
+            $(card_id).droppable({
+                drop: function (event, ui) {
+                    console.log(event)
+                    console.log(ui)
+                    var cls = "cardcode_" + card_code
+                    console.log("[watch] cls=" + cls)
+                    if (ui.draggable.hasClass(cls) && $(card_id).find("div.peg.taken").length == 0) {
+                        console.log("bingo")
+                    } else {
+                        console.log("nope")
+                    }
+                }
+            })
+        }
     }
 
     hide_main_divs() {
