@@ -102,15 +102,12 @@ class GUI {
         this.client.game = this.game
         this.display_board_card_xy_assignment(game_started_message.card_assignment_xy)
         this.id_sequence = game_started_message.id_sequence
-        for (var i=0; i<this.id_sequence.length; i++) {
+        for (var i = 0; i < this.id_sequence.length; i++) {
             this.id_sequence[i] = parseInt(this.id_sequence[i])
         }
         $("#welcome_box").hide()
         $("#game_div").fadeIn()
         this.status = STATE_PLAYING
-        console.log("gui started game")
-        console.log("[watch] this.id_sequence=" + this.id_sequence)
-        console.log("[watch] this.client.player.id=" + this.client.player.id)
     }
 
     update_hand(card_list) {
@@ -130,15 +127,8 @@ class GUI {
     }
 
     add_peg(x, y, id) {
-        console.log("Heeeeeey1")
-        $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass("taken")
-        console.log("Heeeeeey2")
-        console.log("[watch] id=" + id)
-        console.log("[watch] this.id_sequence=" + this.id_sequence)
-        console.log(this.id_sequence)
-        console.log("[watch] this.id_sequence.indexOf(id)=" + this.id_sequence.indexOf(id))
-        $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass("player" + (this.id_sequence.indexOf(id)+1))
-        console.log("Heeeeeey3")
+        $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("taken")
+        $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("player" + (this.id_sequence.indexOf(id) + 1))
     }
 
     handle_players_changed_message(id_to_player) {
@@ -339,10 +329,7 @@ class GUI {
             // Board cards become droppable
             $(card_id).droppable({
                 drop: function (event, ui) {
-                    console.log(event)
-                    console.log(ui)
                     var cls = "cardcode_" + card_code
-                    console.log("[watch] cls=" + cls)
                     var draggable_is_joker = false
                     for (var i in game.joker_codes) {
                         if (ui.draggable.hasClass(game.joker_codes[i])) {
@@ -351,8 +338,7 @@ class GUI {
                         }
                     }
                     if ((ui.draggable.hasClass(cls) || draggable_is_joker)
-                            && ($(card_id).find("div.peg.taken").length == 0)) {
-                        console.log("bingo")
+                        && ($(card_id).find("div.peg.taken").length == 0)) {
                         var parts = card_id.replace("#card", "").split(game.coordinate_delimiter)
                         var x = parts[0]
                         var y = parts[1]
@@ -360,8 +346,6 @@ class GUI {
                         ui.draggable.remove()
                         this.client.play_card(x, y, card_code)
                         // TODO: block dragging until next me-turn
-                    } else {
-                        console.log("nope")
                     }
                 }.bind(this)
             })

@@ -3,7 +3,7 @@
  * @author Miguel Hernández Cabronero <miguel.hernandez@uab.cat>
  * @date 24/01/2021
  * @version 1.0
- * 
+ *
  * @brief Logic of the Sequence game
  */
 

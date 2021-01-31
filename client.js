@@ -52,20 +52,17 @@ class Client extends EventEmitter {
 
     // Play a card on the given (x,y) coordinate of the board, using a card with card_code from this player's hand
     play_card(x, y, card_code) {
-        assert(!((game.xy_to_coordinates_index(x,y)) in this.game.pegs_by_xy))
-        this.socket.sendMessage({"type":"play_card", "x":x, "y":y, "card_code":card_code})
+        assert(!((game.xy_to_coordinates_index(x, y)) in this.game.pegs_by_xy))
+        this.socket.sendMessage({"type": "play_card", "x": x, "y": y, "card_code": card_code})
     }
 
     handle_logged_message(client, player, message) {
         player.name = message["name"]
         player.id = message["id"]
-        console.log("[watch] [client logged] player.id=" + player.id)
         client.status = STATE_LOGGED_IN
     }
 
     handle_game_started_message(client, player, message) {
-        console.log("CLIENT: game started!")
-        console.log(message)
         client.status = STATE_PLAYING
         this.id_sequence = message.id_sequence
         this.emit("game_ready", message)
@@ -78,9 +75,6 @@ class Client extends EventEmitter {
     }
 
     handle_card_played_message(client, player, message) {
-        console.log("[CLIENT] handling card_played")
-        console.log("[watch] message.id=" + message.id)
-        console.log(message)
         assert(client.status == STATE_PLAYING)
         assert(!(game.xy_to_coordinates_index(message.x, message.y) in client.game.pegs_by_xy))
         client.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = message.id

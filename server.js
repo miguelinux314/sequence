@@ -119,8 +119,6 @@ class Server extends EventEmitter {
     }
 
     process_play_card_message(server, socket, message, id) {
-        console.log("Processing play_card message from " + id)
-        console.log(message)
         message.x = parseInt(message.x)
         message.y = parseInt(message.y)
         assert(message.x >= 0)
@@ -131,11 +129,8 @@ class Server extends EventEmitter {
             == message.card_code || message.card_code in game.joker_codes)
         var peg_not_taken = (!(game.xy_to_coordinates_index(message.x, message.y) in server.game.pegs_by_xy))
         if (index >= 0 && card_matches && peg_not_taken) {
-            console.log("alpha")
             player.hand_code_list.splice(index, 1)
-            console.log("[watch] player.hand_code_list.length=" + player.hand_code_list.length)
             server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
-            console.log("[watch] message.id=" + message.id)
             for (var player_id in server.id_to_player) {
                 server.id_to_player[player_id].socket.sendMessage({
                     "type": "card_played",
@@ -146,12 +141,10 @@ class Server extends EventEmitter {
                 })
                 // TODO: handle next turn stuff
             }
-            console.log("beta")
         } else {
             // Card not found in player's hand?!
             // TODO: send error, decide what to do with the game
         }
-        console.log("e")
     }
 
     process_bye_message(server, socket, message, id) {
@@ -167,7 +160,6 @@ class Server extends EventEmitter {
     }
 
     begin_game() {
-        console.log("[Server beginning game]")
         assert(this.status == STATE_ACCEPTING_CONNECTIONS
             && Object.keys(this.id_to_player).length >= game.min_players)
         this.id_sequence = Object.keys(this.id_to_player)
@@ -180,8 +172,6 @@ class Server extends EventEmitter {
             "id_sequence": this.id_sequence,
         }
         for (var id in this.id_to_player) {
-            console.log("Sending message to " + id)
-            console.log(msg)
             this.id_to_player[id].socket.sendMessage(msg)
         }
 
