@@ -33,7 +33,7 @@ class Client extends EventEmitter {
         this.socket.connect(this.port, this.host)
         this.player = new server.Player("-1", player_name, this.socket)
         this.status = STATE_NOT_CONNECTED
-        this.on("logged_message", this.handle_logged_message.bind(this))
+        this.on("logged", this.handle_logged_message.bind(this))
         this.on("game_started", this.handle_game_started_message.bind(this))
         this.on("card_dealt", this.handle_card_dealt_message.bind(this))
         this.on("card_played", this.handle_card_played_message.bind(this))
@@ -59,11 +59,15 @@ class Client extends EventEmitter {
     handle_logged_message(client, player, message) {
         player.name = message["name"]
         player.id = message["id"]
+        console.log("[watch] [client logged] player.id=" + player.id)
         client.status = STATE_LOGGED_IN
     }
 
     handle_game_started_message(client, player, message) {
+        console.log("CLIENT: game started!")
+        console.log(message)
         client.status = STATE_PLAYING
+        this.id_sequence = message.id_sequence
         this.emit("game_ready", message)
     }
 
@@ -74,7 +78,8 @@ class Client extends EventEmitter {
     }
 
     handle_card_played_message(client, player, message) {
-        console.log("[CLIENT] card_played")
+        console.log("[CLIENT] handling card_played")
+        console.log("[watch] message.id=" + message.id)
         console.log(message)
         assert(client.status == STATE_PLAYING)
         assert(!(game.xy_to_coordinates_index(message.x, message.y) in client.game.pegs_by_xy))

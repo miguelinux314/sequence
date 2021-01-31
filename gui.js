@@ -94,7 +94,6 @@ class GUI {
     }
 
     start_game(game_started_message) {
-        console.log("GUI starting game!")
         if (this.game == null) {
             this.game = new game.SequenceGame(game_started_message.card_assignment_xy)
         }
@@ -102,11 +101,16 @@ class GUI {
         assert(this.client != null)
         this.client.game = this.game
         this.display_board_card_xy_assignment(game_started_message.card_assignment_xy)
-        // this.gui_sequence = game_started_message.gui_sequence
-        // console.log(this.gui_sequence)
+        this.id_sequence = game_started_message.id_sequence
+        for (var i=0; i<this.id_sequence.length; i++) {
+            this.id_sequence[i] = parseInt(this.id_sequence[i])
+        }
         $("#welcome_box").hide()
         $("#game_div").fadeIn()
         this.status = STATE_PLAYING
+        console.log("gui started game")
+        console.log("[watch] this.id_sequence=" + this.id_sequence)
+        console.log("[watch] this.client.player.id=" + this.client.player.id)
     }
 
     update_hand(card_list) {
@@ -126,8 +130,15 @@ class GUI {
     }
 
     add_peg(x, y, id) {
+        console.log("Heeeeeey1")
         $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass("taken")
-        $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass(this.id_to_player_class[player_class])
+        console.log("Heeeeeey2")
+        console.log("[watch] id=" + id)
+        console.log("[watch] this.id_sequence=" + this.id_sequence)
+        console.log(this.id_sequence)
+        console.log("[watch] this.id_sequence.indexOf(id)=" + this.id_sequence.indexOf(id))
+        $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass("player" + (this.id_sequence.indexOf(id)+1))
+        console.log("Heeeeeey3")
     }
 
     handle_players_changed_message(id_to_player) {

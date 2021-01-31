@@ -69,7 +69,7 @@ class Server extends EventEmitter {
             var id = _this.next_connection_id
             new_socket.on("message", function (message) {
                 _this.emit(message["type"], _this, new_socket, message, id)
-            })
+            }.bind(id))
         })
         _this.server.listen(_this.port);
     }
@@ -99,7 +99,7 @@ class Server extends EventEmitter {
             var new_player = new Player(
                 id, htmlSanitize(requested_name), socket)
 
-            this.id_to_player[new_player.id] = new_player
+            this.id_to_player[parseInt(new_player.id)] = new_player
             new_player.socket.sendMessage(
                 {
                     "type": "logged",
@@ -135,9 +135,9 @@ class Server extends EventEmitter {
             player.hand_code_list.splice(index, 1)
             console.log("[watch] player.hand_code_list.length=" + player.hand_code_list.length)
             server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
-            for (var id in server.id_to_player) {
-                console.log(console.log("[watch] sending card_player to id=" + id))
-                server.id_to_player[id].socket.sendMessage({
+            console.log("[watch] message.id=" + message.id)
+            for (var player_id in server.id_to_player) {
+                server.id_to_player[player_id].socket.sendMessage({
                     "type": "card_played",
                     "id": id,
                     "x": message.x,
@@ -170,16 +170,18 @@ class Server extends EventEmitter {
         console.log("[Server beginning game]")
         assert(this.status == STATE_ACCEPTING_CONNECTIONS
             && Object.keys(this.id_to_player).length >= game.min_players)
-        // this.id_sequence = Object.keys(this.id_to_player)
-        // game.SequenceGame.shuffle(this.id_sequence)
-        // this.turn_number = 0
+        this.id_sequence = Object.keys(this.id_to_player)
+        game.SequenceGame.shuffle(this.id_sequence)
+        this.turn_number = 0
         var msg = {
             "type": "game_started",
             "card_assignment_xy": this.game.card_assignment_xy,
             "id_to_name": this.get_id_to_name(),
-            // "id_sequence": this.id_sequence,
+            "id_sequence": this.id_sequence,
         }
         for (var id in this.id_to_player) {
+            console.log("Sending message to " + id)
+            console.log(msg)
             this.id_to_player[id].socket.sendMessage(msg)
         }
 
