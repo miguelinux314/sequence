@@ -21,6 +21,8 @@ const STATE_PLAYING = 3
  * Emits on:
  *   - hand_updated
  *   - game_ready
+ *   - turn_started
+ *   - peg_added
  */
 class Client extends EventEmitter {
 
@@ -36,6 +38,7 @@ class Client extends EventEmitter {
         this.on("logged", this.handle_logged_message.bind(this))
         this.on("game_started", this.handle_game_started_message.bind(this))
         this.on("card_dealt", this.handle_card_dealt_message.bind(this))
+        this.on("turn_start", this.handle_turn_start_message.bind(this))
         this.on("card_played", this.handle_card_played_message.bind(this))
         this.on("wait", this.handle_wait_message.bind(this))
         this.on("chat", this.handle_chat_message.bind(this))
@@ -51,9 +54,24 @@ class Client extends EventEmitter {
     }
 
     // Play a card on the given (x,y) coordinate of the board, using a card with card_code from this player's hand
-    play_card(x, y, card_code) {
+    play_card(x, y, card_code, hand_card_index) {
+        console.log("moooo!")
+
         assert(!((game.xy_to_coordinates_index(x, y)) in this.game.pegs_by_xy))
-        this.socket.sendMessage({"type": "play_card", "x": x, "y": y, "card_code": card_code})
+        this.player.hand_code_list.sort()
+        var msg = {
+            "type": "play_card",
+            "x": x, "y": y,
+            "hand_card_codes": this.player.hand_code_list,
+            "hand_card_index": hand_card_index,
+            "card_code": this.player.hand_code_list[hand_card_index]}
+        this.socket.sendMessage(msg)
+        console.log(this.player)
+        console.log("splicing card_index=" + hand_card_index)
+        this.player.hand_code_list.splice(parseInt(hand_card_index), 1)
+        this.emit("hand_updated", this.player.hand_code_list)
+
+        console.log("moooo omega!")
     }
 
     handle_logged_message(client, player, message) {
@@ -71,7 +89,13 @@ class Client extends EventEmitter {
     handle_card_dealt_message(client, player, message) {
         assert(client.status == STATE_PLAYING)
         player.deal_card(message["card_code"])
+        player.hand_code_list.sort()
         this.emit("hand_updated", player.hand_code_list)
+    }
+    
+    handle_turn_start_message(client, player, message) {
+        assert(client.status == STATE_PLAYING)
+        client.emit("turn_started", message)
     }
 
     handle_card_played_message(client, player, message) {

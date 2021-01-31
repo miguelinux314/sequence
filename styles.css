@@ -3,14 +3,16 @@
 html {
   margin: 0px;
   padding: 0px;
-  height: 100%; }
+  height: 100%;
+  overflow: hidden; }
 
 body {
   margin: 0px;
   padding: 0px;
   height: 100%;
   font: 200% Helvetica, sans-serif;
-  color: #333333; }
+  color: #333333;
+  overflow: hidden; }
 
 label {
   margin-right: 5px; }
@@ -235,7 +237,7 @@ div.card.joker2 div.card_contents {
     margin-left: auto;
     margin-right: auto;
     vertical-align: middle;
-    border-radius: 5px;
+    border-radius: 10px;
     height: 10%;
     width: 50%; }
     #game_div #card_selection_box div.card {
@@ -303,5 +305,53 @@ div.card.joker2 div.card_contents {
       top: -3px;
       left: -3px;
       box-shadow: 10px 10px 5px #444444; }
+  #game_div #card_selection_box.active {
+    background-color: #cccccc; }
+  #game_div #card_selection_box.player1.active {
+    border-color: #ac8bff; }
+  #game_div #card_selection_box.player2.active {
+    border-color: #90beeb; }
+  #game_div #card_selection_box.player3.active {
+    border-color: #fea900; }
+  #game_div #player_list_box {
+    margin: 0px;
+    padding: 0px;
+    border: solid 5px #333333;
+    background-color: #999999;
+    height: 9%;
+    width: 100%;
+    border: none;
+    margin-top: -10px;
+    background: rgba(0, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center; }
+    #game_div #player_list_box .player_box {
+      margin: 5px;
+      height: 100%;
+      border: none;
+      flex-grow: 1;
+      display: flex;
+      justify-content: left;
+      align-items: center;
+      overflow: hidden; }
+      #game_div #player_list_box .player_box img {
+        height: 100%;
+        padding: 3px; }
+      #game_div #player_list_box .player_box p {
+        margin: 0px;
+        margin-left: 10px; }
+    #game_div #player_list_box .player_box.active.player1 {
+      border: #ac8bff 3px solid; }
+      #game_div #player_list_box .player_box.active.player1 p.player_number {
+        color: #ac8bff; }
+    #game_div #player_list_box .player_box.active.player2 {
+      border: #90beeb 3px solid; }
+      #game_div #player_list_box .player_box.active.player2 p.player_number {
+        color: #90beeb; }
+    #game_div #player_list_box .player_box.active.player3 {
+      border: #fea900 3px solid; }
+      #game_div #player_list_box .player_box.active.player3 p.player_number {
+        color: #fea900; }
 
 /*# sourceMappingURL=styles.css.map */

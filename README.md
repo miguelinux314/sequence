@@ -14,4 +14,7 @@ Author: Miguel Hernández-Cabronero (miguel.hernandez@uab.cat)
 
 License: CC-BY
 
+Some icons by:
+	- Thiago Silva https://www.iconfinder.com/thiagopontes
+
 ---

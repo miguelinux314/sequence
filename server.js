@@ -77,7 +77,7 @@ class Server extends EventEmitter {
     process_request_start_message(server, socket, message, id) {
         if (this.status == STATE_ACCEPTING_CONNECTIONS) {
             if (Object.keys(this.id_to_player).length >= game.min_players) {
-                this.begin_game()
+                this.start_game()
             } else {
                 socket.sendMessage({
                     "type": "wait", "reason": "Not enough players"
@@ -96,8 +96,7 @@ class Server extends EventEmitter {
             if (requested_name.length == 0) {
                 requested_name = "Player #" + id
             }
-            var new_player = new Player(
-                id, htmlSanitize(requested_name), socket)
+            var new_player = new Player(id, htmlSanitize(requested_name), socket)
 
             this.id_to_player[parseInt(new_player.id)] = new_player
             new_player.socket.sendMessage(
@@ -111,7 +110,7 @@ class Server extends EventEmitter {
             var len = Object.keys(server.id_to_player).length
             if (len == game.max_players) {
                 // Automatically start game when max count players are reached
-                this.begin_game()
+                this.start_game()
             }
         } else {
             Server.send_error_message(socket, "server not accepting connections")
@@ -119,32 +118,76 @@ class Server extends EventEmitter {
     }
 
     process_play_card_message(server, socket, message, id) {
+        console.log("Server processing play... 0")
+        console.log(message)
+        console.log(server.id_to_player[id].hand_code_list)
+
+
+        if (server.id_sequence[server.current_turn % server.id_sequence.length] != id) {
+            // TODO: handle roudy player
+            return
+        }
+        console.log("Server processing play... 1")
+        server.id_to_player[id].hand_code_list.sort()
+        console.log("[watch] message.hand_card_index=" + message.hand_card_index)
+        console.log("[watch] server.id_to_player[id].hand_code_list[message.hand_card_index]=" + server.id_to_player[id].hand_code_list[message.hand_card_index])
+        var is_card_in_hand = (server.id_to_player[id].hand_code_list[message.hand_card_index] == message.card_code)
+        console.log("Server processing play... 1b")
         message.x = parseInt(message.x)
         message.y = parseInt(message.y)
         assert(message.x >= 0)
         assert(message.y >= 0)
         var player = server.id_to_player[id]
-        var index = player.hand_code_list.indexOf(message.card_code)
-        var card_matches = (server.game.card_assignment_xy[game.xy_to_coordinates_index(message.x, message.y)]
-            == message.card_code || message.card_code in game.joker_codes)
+        console.log("Server processing play... 2")
+        console.log(player)
         var peg_not_taken = (!(game.xy_to_coordinates_index(message.x, message.y) in server.game.pegs_by_xy))
-        if (index >= 0 && card_matches && peg_not_taken) {
-            player.hand_code_list.splice(index, 1)
+        var card_matches = (message.card_code == server.game.card_assignment_xy[game.xy_to_coordinates_index(message.x, message.y)])
+        for (var i in game.joker_codes) {
+            if (message.card_code == game.joker_codes[i]) {
+                card_matches = true
+                break
+            }
+        }
+        console.log("[watch] card_matches=" + card_matches)
+        console.log("[watch] peg_not_taken=" + peg_not_taken)
+        console.log("[watch] is_card_in_hand=" + is_card_in_hand)
+        if (card_matches && peg_not_taken && is_card_in_hand) {
+            console.log("Server processing play... 3")
+            server.id_to_player[id].hand_code_list.sort()
+            // Card play is valid
+            // console.log("[watch] server.id_to_player[id].hand_code_list=" + server.id_to_player[id].hand_code_list)
+            console.log("[watch] server.id_to_player[id].hand_code_list.indexOf(message.card_code)=" + server.id_to_player[id].hand_code_list.indexOf(message.card_code))
+            server.id_to_player[id].discard_card(message.card_code)
+            console.log("joomba")
+            // console.log("[watch] server.id_to_player[id].hand_code_list=" + server.id_to_player[id].hand_code_list)
             server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
             for (var player_id in server.id_to_player) {
+                console.log("3a")
+                console.log(server.id_to_player[player_id])
+                console.log("3b")
                 server.id_to_player[player_id].socket.sendMessage({
                     "type": "card_played",
                     "id": id,
                     "x": message.x,
                     "y": message.y,
-                    "card_code": message.card_code,
+                    "hand_card_code": message.hand_card_code,
                 })
-                // TODO: handle next turn stuff
+                console.log("3c")
             }
+            console.log("Server processing play... 4")
+            server.deal_next_card(id)
+            console.log("Server processing play... 5")
+
+
+            server.current_turn++
+            server.notify_next_turn()
+            console.log("Server processing play... 6")
         } else {
             // Card not found in player's hand?!
             // TODO: send error, decide what to do with the game
         }
+        
+        console.log("Server play_card omega")
     }
 
     process_bye_message(server, socket, message, id) {
@@ -159,12 +202,12 @@ class Server extends EventEmitter {
 
     }
 
-    begin_game() {
+    start_game() {
         assert(this.status == STATE_ACCEPTING_CONNECTIONS
             && Object.keys(this.id_to_player).length >= game.min_players)
         this.id_sequence = Object.keys(this.id_to_player)
         game.SequenceGame.shuffle(this.id_sequence)
-        this.turn_number = 0
+        this.status = STATE_PLAYING
         var msg = {
             "type": "game_started",
             "card_assignment_xy": this.game.card_assignment_xy,
@@ -172,22 +215,34 @@ class Server extends EventEmitter {
             "id_sequence": this.id_sequence,
         }
         for (var id in this.id_to_player) {
+            this.id_to_player[id].status = STATE_PLAYING
             this.id_to_player[id].socket.sendMessage(msg)
         }
 
-
+        // Deal initial cards
         for (var id in this.id_to_player) {
             for (var i = 0; i < game.cards_in_hand; i++) {
-                this.id_to_player[id].deal_card(this.deck[this.dealt_cards % this.deck.length])
-                this.dealt_cards++
+                this.deal_next_card(id)
             }
         }
 
-        this.status = STATE_PLAYING
+        this.current_turn = 0
+        this.notify_next_turn()
     }
 
-    get_player_count() {
-        return Object.keys(this.id_to_player).length
+    deal_next_card(player_id) {
+        this.id_to_player[player_id].deal_card(this.deck[this.dealt_cards % this.deck.length])
+        this.dealt_cards++
+    }
+
+    notify_next_turn() {
+        $("#game_div").find(".active").removeClass("active")
+
+        var next_player = this.id_to_player[this.id_sequence[this.current_turn % this.id_sequence.length]]
+        var msg = {"type": "turn_start", "turn_number": this.current_turn, "id": next_player.id}
+        for (var id in this.id_to_player) {
+            this.id_to_player[id].socket.sendMessage(msg)
+        }
     }
 
     /// Return a dictionary indexed by player id and entries being names
@@ -222,11 +277,21 @@ class Player {
     deal_card(card_code) {
         this.hand_code_list.push(card_code)
         this.all_cards_dealt.push(card_code)
+        this.hand_code_list.sort()
 
         this.socket.sendMessage({
             "type": "card_dealt",
             "card_code": card_code,
         })
+
+        console.log("PLAYER(" + this.id + "): hand_code_list=" + this.hand_code_list)
+    }
+
+    discard_card(card_code) {
+        var index = this.hand_code_list.indexOf(card_code)
+        console.log("[watch] index=" + index)
+        this.hand_code_list.splice(index, 1)
+        console.log("[watch] after discarding: this.hand_code_list=" + this.hand_code_list)
     }
 }
 

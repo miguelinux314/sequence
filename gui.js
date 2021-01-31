@@ -10,6 +10,7 @@ var assert = require("assert")
 var game = require("./game.js")
 var server = require("./server.js")
 var client = require("./client.js")
+var htmlSanitize = require('sanitize-html')
 
 const STATE_NOT_STARTED = 0
 const STATE_WELCOME = 1
@@ -58,6 +59,7 @@ class GUI {
         this.client.on("game_ready", this.start_game.bind(this))
         this.client.on("hand_updated", this.update_hand.bind(this))
         this.client.on("peg_added", this.add_peg.bind(this))
+        this.client.on("turn_started", this.handle_turn_start_message.bind(this))
         $("#login_button").prop("disabled", true)
         $("#name_input").prop("disabled", true)
         $("#login_host").prop("disabled", true)
@@ -90,7 +92,7 @@ class GUI {
         assert(this.status != STATE_PLAYING && this.status != STATE_FINISHED)
         $("#welcome_box").fadeOut()
         $("#start_now").prop("disabled", true)
-        this.server.begin_game()
+        this.server.start_game()
     }
 
     start_game(game_started_message) {
@@ -102,24 +104,37 @@ class GUI {
         this.client.game = this.game
         this.display_board_card_xy_assignment(game_started_message.card_assignment_xy)
         this.id_sequence = game_started_message.id_sequence
-        for (var i = 0; i < this.id_sequence.length; i++) {
+        this.id_to_name = game_started_message.id_to_name
+        $("div.player_box").hide()
+        for (var i in this.id_sequence) {
             this.id_sequence[i] = parseInt(this.id_sequence[i])
+            var player_box = $("div.player_box.player"+(this.id_sequence.indexOf(this.id_sequence[i])+1))
+            player_box.fadeIn()
+            player_box.find("p.player_name").html(htmlSanitize(this.id_to_name[this.id_sequence[i]]))
+            if (this.id_sequence[i] == this.client.player.id) {
+                player_box.find("p.player_number").html("You")
+            } else {
+                player_box.find("p.player_number").html("Player " + (parseInt(i)+1))
+            }
         }
         $("#welcome_box").hide()
         $("#game_div").fadeIn()
         this.status = STATE_PLAYING
+        $("#card_selection_box").addClass("player" + (this.id_sequence.indexOf(this.client.player.id) + 1))
     }
 
     update_hand(card_list) {
         assert(this.status == STATE_PLAYING)
         var s = ""
         var hand_id_list = []
+        card_list = card_list.sort()
         for (var i in card_list) {
             var hand_id = "hand_" + i
             hand_id_list.push("#" + hand_id)
             var div_html = GUI.get_card_div_html(hand_id, false)
             s += div_html + "\n"
         }
+        $("#card_selection_box").html("")
         $("#card_selection_box").html(s)
         for (var i in hand_id_list) {
             this.display_card(hand_id_list[i], card_list[i])
@@ -129,6 +144,16 @@ class GUI {
     add_peg(x, y, id) {
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("taken")
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("player" + (this.id_sequence.indexOf(id) + 1))
+    }
+
+    handle_turn_start_message(message) {
+        $("#game_div .active").removeClass("active")
+        $("div.player_box.player" + (this.id_sequence.indexOf(message.id)+1)).addClass("active")
+        $("[id^=hand_]").draggable("disable")
+        if (message.id == this.client.player.id) {
+            $("#card_selection_box").addClass("active")
+            $("[id^=hand_]").draggable("enable")
+        }
     }
 
     handle_players_changed_message(id_to_player) {
@@ -332,22 +357,20 @@ class GUI {
                     var cls = "cardcode_" + card_code
                     var draggable_is_joker = false
                     for (var i in game.joker_codes) {
-                        if (ui.draggable.hasClass(game.joker_codes[i])) {
+                        if (ui.draggable.hasClass("cardcode_" + game.joker_codes[i])) {
                             draggable_is_joker = true
                             break
                         }
                     }
-                    if ((ui.draggable.hasClass(cls) || draggable_is_joker)
-                        && ($(card_id).find("div.peg.taken").length == 0)) {
+                    console.log("[watch] draggable_is_joker=" + draggable_is_joker)
+                    if ((ui.draggable.hasClass(cls) || draggable_is_joker) && ($(card_id).find("div.peg.taken").length == 0)) {
                         var parts = card_id.replace("#card", "").split(game.coordinate_delimiter)
                         var x = parts[0]
                         var y = parts[1]
                         ui.draggable.fadeOut()
-                        ui.draggable.remove()
-                        this.client.play_card(x, y, card_code)
-                        // TODO: block dragging until next me-turn
+                        this.client.play_card(x, y, card_code, ui.draggable[0].id.replace("hand_", ""))
                     }
-                }.bind(this)
+                }.bind(this).bind(card_code)
             })
         }
     }

@@ -34,6 +34,7 @@ html
   margin: 0px
   padding: 0px
   height: 100%
+  overflow: hidden
 
 body
   margin: 0px
@@ -41,6 +42,7 @@ body
   height: 100%
   font: 200% $font-stack
   color: $first_fg_color
+  overflow: hidden
 
 label
   margin-right: 5px
@@ -109,7 +111,7 @@ label
   @include box
   float: left
   border: none
-  background-color: rgba(0,0,0,0)
+  background-color: rgba(0, 0, 0, 0)
   text-align: center
   padding: 5px
   display: flex
@@ -174,24 +176,28 @@ label
 div.card.hearts, div.card.diamonds
   div.card_contents
     border-color: $red_suit_color
+
     p.card_label
       color: $red_suit_color
 
 div.card.spades, div.card.clubs
   div.card_contents
     border-color: $black_suit_color
+
     p.card_label
       color: $black_suit_color
 
 div.card.joker1
   div.card_contents
     border-color: $joker1_color
+
     p.card_label
       color: $joker1_color
 
 div.card.joker2
   div.card_contents
     border-color: $joker2_color
+
     p.card_label
       color: $joker2_color
 
@@ -304,7 +310,7 @@ div.card.joker2
 
   #card_selection_box
     @include main_box
-    border-radius: 5px
+    border-radius: 10px
     height: 10%
     width: 50%
 
@@ -324,3 +330,69 @@ div.card.joker2
 
     div.card.highlighted_hover
       @include highlighted_card
+
+  #card_selection_box.active
+    background-color: $third_bg_color
+
+  #card_selection_box.player1.active
+    border-color: $player_1_color
+
+
+  #card_selection_box.player2.active
+    border-color: $player_2_color
+
+  #card_selection_box.player3.active
+    border-color: $player_3_color
+
+  #player_list_box
+    @include box
+    height: 9%
+    width: 100%
+    border: none
+    margin-top: -10px
+    background: rgba(0,0,0,0)
+
+    display: flex
+    justify-content: center
+    align-items: center
+
+    .player_box
+      margin: 5px
+      height: 100%
+      border: none
+      flex-grow: 1
+      display: flex
+      justify-content: left
+      align-items: center
+      overflow: hidden
+
+      img
+        height: 100%
+        padding: 3px
+
+      p
+        margin: 0px
+        margin-left: 10px
+
+    //.player_box.active
+    //  background-color: $first_fg_color
+    //  p
+    //    color: $first_bg_color
+
+    .player_box.active.player1
+      border: $player_1_color 3px solid
+
+      p.player_number
+        color: $player_1_color
+
+    .player_box.active.player2
+      border: $player_2_color 3px solid
+
+      p.player_number
+        color: $player_2_color
+
+    .player_box.active.player3
+      border: $player_3_color 3px solid
+
+      p.player_number
+        color: $player_3_color
