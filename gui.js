@@ -57,6 +57,7 @@ class GUI {
         this.client = new client.Client(host, port, name)
         this.client.on("game_ready", this.start_game.bind(this))
         this.client.on("hand_updated", this.update_hand.bind(this))
+        this.client.on("peg_added", this.add_peg.bind(this))
         $("#login_button").prop("disabled", true)
         $("#name_input").prop("disabled", true)
         $("#login_host").prop("disabled", true)
@@ -92,12 +93,17 @@ class GUI {
         this.server.begin_game()
     }
 
-    start_game(message) {
+    start_game(game_started_message) {
+        console.log("GUI starting game!")
         if (this.game == null) {
-            this.game = new game.SequenceGame(message.card_assignment)
+            this.game = new game.SequenceGame(game_started_message.card_assignment_xy)
         }
         assert(this.game != null)
-        this.display_board_card_xy_assignment(message.card_assignment)
+        assert(this.client != null)
+        this.client.game = this.game
+        this.display_board_card_xy_assignment(game_started_message.card_assignment_xy)
+        // this.gui_sequence = game_started_message.gui_sequence
+        // console.log(this.gui_sequence)
         $("#welcome_box").hide()
         $("#game_div").fadeIn()
         this.status = STATE_PLAYING
@@ -117,6 +123,11 @@ class GUI {
         for (var i in hand_id_list) {
             this.display_card(hand_id_list[i], card_list[i])
         }
+    }
+
+    add_peg(x, y, id) {
+        $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass("taken")
+        $("#card" + game.xy_to_coordinates_index(x,y) + " div.peg").addClass(this.id_to_player_class[player_class])
     }
 
     handle_players_changed_message(id_to_player) {
@@ -217,15 +228,16 @@ class GUI {
     /// Assigns a configuration of cards to the
     display_board_card_xy_assignment(coordinates_to_cardcode) {
         for (var coordinates in coordinates_to_cardcode) {
-            coordinates = coordinates.split(",")
-            var x = coordinates[0]
-            var y = coordinates[1]
+            var coordinate_list = coordinates.split(game.coordinate_delimiter)
+            var x = coordinate_list[0]
+            var y = coordinate_list[1]
             var id_string = "#" + GUI.get_card_id_from_xy(x, y)
             var card_code = coordinates_to_cardcode[coordinates]
             this.display_card(id_string, card_code)
         }
     }
 
+    // Display a card div and add the appropriate listeners
     display_card(card_id, card_code) {
         var card_name
         var card_class
@@ -267,37 +279,37 @@ class GUI {
 
         // All card get some hover
         $(card_id).hover(function () {
-            var same_cardcode
-            if (game.joker_codes.includes(card_code)) {
-                same_cardcode = $("div.card")
-            } else {
-                same_cardcode = $(".cardcode_" + card_code)
-            }
-            var highlighted_count = 0
+                var same_cardcode
+                if (game.joker_codes.includes(card_code)) {
+                    same_cardcode = $("div.card")
+                } else {
+                    same_cardcode = $(".cardcode_" + card_code)
+                }
+                var highlighted_count = 0
 
-            for (var i = 0; i < same_cardcode.length; i++) {
-                if ($("#" + same_cardcode[i].id).find("div.peg").length > 0) {
-                    if ($("#" + same_cardcode[i].id).find("div.peg.taken").length == 0) {
-                        $("#" + same_cardcode[i].id).addClass("highlighted_hover")
-                        highlighted_count += 1
+                for (var i = 0; i < same_cardcode.length; i++) {
+                    if ($("#" + same_cardcode[i].id).find("div.peg").length > 0) {
+                        if ($("#" + same_cardcode[i].id).find("div.peg.taken").length == 0) {
+                            $("#" + same_cardcode[i].id).addClass("highlighted_hover")
+                            highlighted_count += 1
+                        }
                     }
                 }
-            }
 
-            if (is_hand_card) {
-                if (highlighted_count == 0) {
-                    // Hand card: highlight only if more than one card was selectable
+                if (is_hand_card) {
+                    if (highlighted_count == 0) {
+                        // Hand card: highlight only if more than one card was selectable
+                        $(card_id).removeClass("highlighted_hover")
+                    } else {
+                        $(card_id).addClass("highlighted_hover")
+                    }
+                } else if ($(card_id).find("div.peg.taken").lenght > 0) {
                     $(card_id).removeClass("highlighted_hover")
-                } else {
-                    $(card_id).addClass("highlighted_hover")
                 }
-            } else if ($(card_id).find("div.peg.taken").lenght > 0) {
-                $(card_id).removeClass("highlighted_hover")
-            }
-        },
-        function () {
-            $("div.card").removeClass("highlighted_hover")
-        })
+            },
+            function () {
+                $("div.card").removeClass("highlighted_hover")
+            })
 
         if (is_hand_card) {
             // Hand cards become draggable
@@ -320,12 +332,27 @@ class GUI {
                     console.log(ui)
                     var cls = "cardcode_" + card_code
                     console.log("[watch] cls=" + cls)
-                    if (ui.draggable.hasClass(cls) && $(card_id).find("div.peg.taken").length == 0) {
+                    var draggable_is_joker = false
+                    for (var i in game.joker_codes) {
+                        if (ui.draggable.hasClass(game.joker_codes[i])) {
+                            draggable_is_joker = true
+                            break
+                        }
+                    }
+                    if ((ui.draggable.hasClass(cls) || draggable_is_joker)
+                            && ($(card_id).find("div.peg.taken").length == 0)) {
                         console.log("bingo")
+                        var parts = card_id.replace("#card", "").split(game.coordinate_delimiter)
+                        var x = parts[0]
+                        var y = parts[1]
+                        ui.draggable.fadeOut()
+                        ui.draggable.remove()
+                        this.client.play_card(x, y, card_code)
+                        // TODO: block dragging until next me-turn
                     } else {
                         console.log("nope")
                     }
-                }
+                }.bind(this)
             })
         }
     }
@@ -350,7 +377,7 @@ class GUI {
     }
 
     static get_card_id_from_xy(x, y) {
-        return "card" + x + "-" + y
+        return "card" + game.xy_to_coordinates_index(x, y)
     }
 }
 

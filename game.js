@@ -24,12 +24,12 @@ const cards_in_hand = 6
 // An abstract game of sequence, using no GUI or socket communication
 class SequenceGame {
 
-    constructor(card_assignment) {
-        this.card_assignment = card_assignment
+    constructor(card_assignment_xy) {
+        this.card_assignment_xy = card_assignment_xy
         // Pegs placed indexed by x-y (example ['0-12']), with values being
         // player ids
 
-        // this.pegs_by_xy = {}
+        this.pegs_by_xy = {}
     }
 
     /// Get the cards for all cards to be placed on the boardº1
@@ -59,7 +59,7 @@ class SequenceGame {
         var k = 0
         for (var i = 0; i < main_board_row_count; i++) {
             for (var j = 0; j < main_board_column_count; j++) {
-                coordinates_to_cardcode[j + "," + i] = all_card_codes[k % all_card_codes.length]
+                coordinates_to_cardcode[xy_to_coordinates(j, i)] = all_card_codes[k % all_card_codes.length]
                 k += 1
             }
 
@@ -102,6 +102,12 @@ class SequenceGame {
     }
 }
 
+const coordinate_delimiter = "_"
+
+function xy_to_coordinates(x, y) {
+    return x + coordinate_delimiter + y
+}
+
 // Game exports
 module.exports.SequenceGame = SequenceGame
 module.exports.main_board_row_count = main_board_row_count
@@ -113,3 +119,5 @@ module.exports.main_board_column_count = main_board_column_count
 module.exports.min_players = min_players
 module.exports.max_players = max_players
 module.exports.cards_in_hand = cards_in_hand
+module.exports.xy_to_coordinates_index = xy_to_coordinates
+module.exports.coordinate_delimiter = coordinate_delimiter

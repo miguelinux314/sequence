@@ -34,7 +34,7 @@ class Server extends EventEmitter {
     constructor(port) {
         super()
 
-        const expected_length = 2*(4*(game.suit_max-game.suit_min+1+game.figures_no_joker.length) + (game.joker_codes.length*2))
+        const expected_length = 2 * (4 * (game.suit_max - game.suit_min + 1 + game.figures_no_joker.length) + (game.joker_codes.length * 2))
 
         this.game = new game.SequenceGame(game.SequenceGame.get_random_card_assignment_xy())
         var all_cards = game.SequenceGame.get_deal_deck_cards()
@@ -55,6 +55,7 @@ class Server extends EventEmitter {
         this.on("error", this.process_error_message.bind(this))
         this.on("bye", this.process_bye_message.bind(this))
         this.on("chat", this.process_chat_message.bind(this))
+        this.on("play_card", this.process_play_card_message.bind(this))
 
         this.start()
     }
@@ -117,6 +118,42 @@ class Server extends EventEmitter {
         }
     }
 
+    process_play_card_message(server, socket, message, id) {
+        console.log("Processing play_card message from " + id)
+        console.log(message)
+        message.x = parseInt(message.x)
+        message.y = parseInt(message.y)
+        assert(message.x >= 0)
+        assert(message.y >= 0)
+        var player = server.id_to_player[id]
+        var index = player.hand_code_list.indexOf(message.card_code)
+        var card_matches = (server.game.card_assignment_xy[game.xy_to_coordinates_index(message.x, message.y)]
+            == message.card_code || message.card_code in game.joker_codes)
+        var peg_not_taken = (!(game.xy_to_coordinates_index(message.x, message.y) in server.game.pegs_by_xy))
+        if (index >= 0 && card_matches && peg_not_taken) {
+            console.log("alpha")
+            player.hand_code_list.splice(index, 1)
+            console.log("[watch] player.hand_code_list.length=" + player.hand_code_list.length)
+            server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
+            for (var id in server.id_to_player) {
+                console.log(console.log("[watch] sending card_player to id=" + id))
+                server.id_to_player[id].socket.sendMessage({
+                    "type": "card_played",
+                    "id": id,
+                    "x": message.x,
+                    "y": message.y,
+                    "card_code": message.card_code,
+                })
+                // TODO: handle next turn stuff
+            }
+            console.log("beta")
+        } else {
+            // Card not found in player's hand?!
+            // TODO: send error, decide what to do with the game
+        }
+        console.log("e")
+    }
+
     process_bye_message(server, socket, message, id) {
 
     }
@@ -133,10 +170,14 @@ class Server extends EventEmitter {
         console.log("[Server beginning game]")
         assert(this.status == STATE_ACCEPTING_CONNECTIONS
             && Object.keys(this.id_to_player).length >= game.min_players)
+        // this.id_sequence = Object.keys(this.id_to_player)
+        // game.SequenceGame.shuffle(this.id_sequence)
+        // this.turn_number = 0
         var msg = {
             "type": "game_started",
-            "card_assignment": this.game.card_assignment,
+            "card_assignment_xy": this.game.card_assignment_xy,
             "id_to_name": this.get_id_to_name(),
+            // "id_sequence": this.id_sequence,
         }
         for (var id in this.id_to_player) {
             this.id_to_player[id].socket.sendMessage(msg)
