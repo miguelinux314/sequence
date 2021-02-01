@@ -11,11 +11,11 @@
     <link rel="stylesheet" href="./styles.css">
 
     <!-- Scripts -->
-    <script>
-        delete module.exports
-    </script>
+    <!-- From https://stackoverflow.com/questions/32621988/electron-jquery-is-not-defined  -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
     <script src="./lib/jquery-3.2.1.js"></script>
     <script src="./lib/jquery-ui.js"></script>
+    <script>if (window.module) module = window.module;</script>
 </head>
 
 <body>

@@ -69,7 +69,7 @@ class Server extends EventEmitter {
             var id = _this.next_connection_id
             new_socket.on("message", function (message) {
                 _this.emit(message["type"], _this, new_socket, message, id)
-            }.bind(id))
+            })
         })
         _this.server.listen(_this.port);
     }
@@ -236,8 +236,6 @@ class Server extends EventEmitter {
     }
 
     notify_next_turn() {
-        $("#game_div").find(".active").removeClass("active")
-
         var next_player = this.id_to_player[this.id_sequence[this.current_turn % this.id_sequence.length]]
         var msg = {"type": "turn_start", "turn_number": this.current_turn, "id": next_player.id}
         for (var id in this.id_to_player) {

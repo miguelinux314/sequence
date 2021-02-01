@@ -13,7 +13,8 @@ app.once('ready', () => {
     minWidth: 800,
     minHeight: 800,
     show: false,
-    resizable: true
+    resizable: true,
+    webPreferences: {nodeIntegration: true},
   })
 
   // window.setMenu(null)
@@ -29,4 +30,6 @@ app.once('ready', () => {
   window.once('ready-to-show', () => {
     window.show()
   })
+
+  // window.maximize()
 })
