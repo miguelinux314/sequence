@@ -35,6 +35,7 @@ class Client extends EventEmitter {
         this.socket.connect(this.port, this.host)
         this.player = new server.Player("-1", player_name, this.socket)
         this.status = STATE_NOT_CONNECTED
+        // Messages received from the server
         this.on("logged", this.handle_logged_message.bind(this))
         this.on("game_started", this.handle_game_started_message.bind(this))
         this.on("card_dealt", this.handle_card_dealt_message.bind(this))
@@ -43,6 +44,8 @@ class Client extends EventEmitter {
         this.on("wait", this.handle_wait_message.bind(this))
         this.on("chat", this.handle_chat_message.bind(this))
         this.on("error", this.handle_error_message.bind(this))
+        this.on("discarded_card", this.handle_discarded_card_message.bind(this))
+        this.on("game_over", this.handle_game_over_message.bind(this))
         var _this = this
         this.socket.on('connect', function () {
             _this.player.socket.on("message", function (message) {
@@ -74,6 +77,13 @@ class Client extends EventEmitter {
         this.socket.sendMessage(msg)
         this.player.hand_code_list.splice(parseInt(hand_card_index), 1)
         this.emit("hand_updated", this.player.hand_code_list)
+    }
+
+    discard_card(hand_card_id) {
+        this.socket.sendMessage({
+            "type":"discard_card",
+            "hand_index": hand_card_id.replace("hand_", "")
+        })
     }
 
     handle_logged_message(client, player, message) {
@@ -124,6 +134,21 @@ class Client extends EventEmitter {
 
     handle_error_message(client, player, message) {
         // TODO: disconnect and show some message
+    }
+
+    handle_discarded_card_message(client, player, message) {
+        if (message.id == player.id) {
+            var index = player.hand_code_list.indexOf(message.card_code)
+            player.hand_code_list.splice(index, 1)
+        }
+    }
+
+    handle_game_over_message(client, player, message) {
+        if (message.winning_id == player.id) {
+            client.emit("game_won")
+        } else {
+            client.emit("game_lost")
+        }
     }
 }
 

@@ -56,11 +56,13 @@ class GUI {
         var port = parseInt($("#login_port").prop("value").replace(/[^0-9]*/g, ""))
         var name = $("#name_input").prop("value").trim()
         this.client = new client.Client(host, port, name)
-        this.client.on("game_ready", this.start_game.bind(this))
-        this.client.on("hand_updated", this.update_hand.bind(this))
-        this.client.on("peg_added", this.add_peg.bind(this))
-        this.client.on("peg_deleted", this.delete_peg.bind(this))
-        this.client.on("turn_started", this.handle_turn_start_message.bind(this))
+        this.client.on("game_ready", this.handle_game_ready_event.bind(this))
+        this.client.on("hand_updated", this.message_hand_updated_event.bind(this))
+        this.client.on("peg_added", this.handle_peg_added_event.bind(this))
+        this.client.on("peg_deleted", this.handle_deleted_peg_event.bind(this))
+        this.client.on("turn_started", this.handle_turn_started_event.bind(this))
+        this.client.on("game_won", this.handle_game_won_event.bind(this))
+        this.client.on("game_lost", this.handle_game_lost_event.bind(this))
         $("#login_button").prop("disabled", true)
         $("#name_input").prop("disabled", true)
         $("#login_host").prop("disabled", true)
@@ -96,7 +98,7 @@ class GUI {
         this.server.start_game()
     }
 
-    start_game(game_started_message) {
+    handle_game_ready_event(game_started_message) {
         if (this.game == null) {
             this.game = new game.SequenceGame(game_started_message.card_assignment_xy)
         }
@@ -122,9 +124,15 @@ class GUI {
         $("#game_div").fadeIn()
         this.status = STATE_PLAYING
         $("#card_selection_box").addClass("player" + (this.id_sequence.indexOf(this.client.player.id) + 1))
+        $("#trash").droppable({
+            drop: function (event, ui) {
+                this.client.discard_card(ui.draggable[0].id)
+                ui.draggable.fadeOut()
+            }.bind(this)
+        })
     }
 
-    update_hand(card_list) {
+    message_hand_updated_event(card_list) {
         assert(this.status == STATE_PLAYING)
         var s = ""
         var hand_id_list = []
@@ -142,21 +150,21 @@ class GUI {
         }
     }
 
-    add_peg(x, y, id) {
+    handle_peg_added_event(x, y, id) {
         $("#card" + game.xy_to_coordinates_index(x, y)).addClass("taken")
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("taken")
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("player" + (this.id_sequence.indexOf(id) + 1))
     }
 
-    delete_peg(x, y, id) {
+    handle_deleted_peg_event(x, y, id) {
         $("#card" + game.xy_to_coordinates_index(x, y)).removeClass("taken")
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").removeClass("taken")
-        for (var i=0; i<game.max_players; i++) {
+        for (var i = 0; i < game.max_players; i++) {
             $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").removeClass("player" + i)
         }
     }
 
-    handle_turn_start_message(message) {
+    handle_turn_started_event(message) {
         $("#game_div .active").removeClass("active")
         $("div.player_box.player" + (this.id_sequence.indexOf(message.id) + 1)).addClass("active")
         $("[id^=hand_]").draggable("disable")
@@ -164,6 +172,20 @@ class GUI {
             $("#card_selection_box").addClass("active")
             $("[id^=hand_]").draggable("enable")
         }
+    }
+
+    handle_game_won_event() {
+        $("#game_over").removeClass("lost")
+        $("#game_over").addClass("won")
+        $("#game_over").fadeIn()
+        $("#game_over .message").html("You WON!!")
+    }
+
+    handle_game_lost_event() {
+        $("#game_over").removeClass("won")
+        $("#game_over").addClass("lost")
+        $("#game_over").fadeIn()
+        $("#game_over .message").html("You lost...")
     }
 
     handle_players_changed_message(id_to_player) {
@@ -303,14 +325,21 @@ class GUI {
                 card_class = "[ERROR]"
         }
 
-        card_name = "<span class='card_class_text'>" + card_name + "</span>"
         card_name += card_code[1]
+        var card_title = card_code
+        if (card_name == "J1") {
+            card_name = "☆"
+            $(card_id).attr("title", "Can be placed in any empty board cell.")
+        } else if (card_name == "J2") {
+            card_name = "☇"
+            $(card_id).attr("title", "Can remove any peg on the board.")
+        }
+
         var q = card_id + " p.card_label"
         $(q).html(card_name)
         $(card_id).addClass(card_class)
         var cardcode_class = "cardcode_" + card_code
         $(card_id).addClass(cardcode_class)
-
         var is_hand_card = ($(card_id).find("div.peg").length == 0)
 
         // All cards get some hover
@@ -330,6 +359,7 @@ class GUI {
                     highlighted_count += 1
                 }
 
+                $("[id^=hand_]").removeClass("highlighted_hover")
                 if (is_hand_card) {
                     if (highlighted_count == 0) {
                         // Hand card: highlight only if more than one card was selectable
@@ -365,13 +395,13 @@ class GUI {
                 drop: function (event, ui) {
                     var cls = "cardcode_" + card_code
                     var play_card = false
-                    if ((ui.draggable.hasClass("cardcode_"+ game.joker_remove_code))
-                            && ($(card_id).find("div.peg.taken").length == 1)) {
+                    if ((ui.draggable.hasClass("cardcode_" + game.joker_remove_code))
+                        && ($(card_id).find("div.peg.taken").length == 1)) {
                         // TODO: remove everywhere, notify
                         play_card = true
                     } else if (($(card_id).find("div.peg.taken").length == 0)
-                            && (ui.draggable.hasClass(cls)
-                                || ui.draggable.hasClass("cardcode_" +  game.joker_place_code))) {
+                        && (ui.draggable.hasClass(cls)
+                            || ui.draggable.hasClass("cardcode_" + game.joker_place_code))) {
                         play_card = true
                     }
                     if (play_card) {

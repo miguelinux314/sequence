@@ -49,13 +49,14 @@ class Server extends EventEmitter {
         this.next_connection_id = 0
 
         this.server = net.createServer();
-        // Message handles
+        // Message handles from clients
         this.on("login", this.process_login_message.bind(this))
         this.on("request_start", this.process_request_start_message.bind(this))
         this.on("error", this.process_error_message.bind(this))
         this.on("bye", this.process_bye_message.bind(this))
         this.on("chat", this.process_chat_message.bind(this))
         this.on("play_card", this.process_play_card_message.bind(this))
+        this.on("discard_card", this.process_discard_card_message.bind(this))
 
         this.start()
     }
@@ -90,7 +91,6 @@ class Server extends EventEmitter {
 
     /// Process a message of type "login"
     process_login_message(server, socket, message, id) {
-
         if (this.status == STATE_ACCEPTING_CONNECTIONS) {
             var requested_name = message["name"]
             if (requested_name.length == 0) {
@@ -118,6 +118,11 @@ class Server extends EventEmitter {
     }
 
     process_play_card_message(server, socket, message, id) {
+        if (this.status != STATE_PLAYING) {
+            Server.send_error_message(socket, "not playing")
+            return
+        }
+
         if (server.id_sequence[server.current_turn % server.id_sequence.length] != id) {
             // TODO: handle roudy player
             return
@@ -128,19 +133,17 @@ class Server extends EventEmitter {
         message.y = parseInt(message.y)
         assert(message.x >= 0)
         assert(message.y >= 0)
-        var player = server.id_to_player[id]
-
         var peg_not_taken = (!(game.xy_to_coordinates_index(message.x, message.y) in server.game.pegs_by_xy))
         var card_matches = (message.card_code == server.game.card_assignment_xy[game.xy_to_coordinates_index(message.x, message.y)])
-        for (var i=0; i<game.joker_codes.length; i++) {
+        for (var i = 0; i < game.joker_codes.length; i++) {
             if (message.hand_card_code == game.joker_codes[i]) {
                 card_matches = true
                 break
             }
         }
         if (card_matches && is_card_in_hand &&
-                ((message.hand_card_code == game.joker_remove_code) && !peg_not_taken)
-                || ((message.hand_card_code != game.joker_remove_code) && peg_not_taken)) {
+            ((message.hand_card_code == game.joker_remove_code) && !peg_not_taken)
+            || ((message.hand_card_code != game.joker_remove_code) && peg_not_taken)) {
             if (message.hand_card_code != game.joker_remove_code) {
                 // Adding peg
                 server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
@@ -161,12 +164,57 @@ class Server extends EventEmitter {
             server.id_to_player[id].discard_card(message.card_code)
             server.deal_next_card(id)
 
-            server.current_turn++
-            server.notify_next_turn()
+            // Verify game end
+            var winning_id = server.game.get_winning_peg(message.x, message.y)
+            if (winning_id != null) {
+                assert(winning_id == id)
+                server.finish_game(id)
+            } else {
+                // Otherwise, go to the next turn
+                server.current_turn++
+                server.notify_next_turn()
+            }
         } else {
             // Card not found in player's hand?!
             // TODO: send error, decide what to do with the game
         }
+    }
+
+    finish_game(winning_id) {
+        for (var id in this.id_to_player) {
+            this.id_to_player[id].socket.sendMessage({
+                "type": "game_over",
+                "winning_id": winning_id,
+            })
+        }
+        this.status = STATE_FINISHED
+        console.log("GAME OVER")
+    }
+
+    process_discard_card_message(server, socket, message, id) {
+        if (this.status != STATE_PLAYING) {
+            Server.send_error_message(socket, "not playing")
+            return
+        }
+
+        if (server.id_sequence[server.current_turn % server.id_sequence.length] != id) {
+            // TODO: handle roudy player
+            return
+        }
+
+        // TODO: check that index is within limits, handle roudy instead
+        var card_code = server.id_to_player[id].hand_code_list[message.hand_index]
+        server.id_to_player[id].hand_code_list.splice(parseInt(message.hand_index), 1)
+        for (var i in server.id_to_player) {
+            server.id_to_player[i].socket.sendMessage({
+                "type": "discarded_card",
+                "id": id,
+                "card_code": card_code,
+            })
+        }
+        this.deal_next_card(id)
+        server.current_turn++
+        this.notify_next_turn()
     }
 
     process_bye_message(server, socket, message, id) {

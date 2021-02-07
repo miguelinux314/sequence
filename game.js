@@ -22,6 +22,8 @@ const joker_codes = [joker_place_code, joker_remove_code]
 const min_players = 2
 const max_players = 3
 const cards_in_hand = 6
+const winning_line_corner = 4
+const winning_line_no_corner = 5
 
 // An abstract game of sequence, using no GUI or socket communication
 class SequenceGame {
@@ -30,8 +32,172 @@ class SequenceGame {
         this.card_assignment_xy = card_assignment_xy
         // Pegs placed indexed by x-y (example ['0-12']), with values being
         // player ids
-
         this.pegs_by_xy = {}
+    }
+
+    /**
+     * Return the id of the winning player (part of the winning play must link to position x,y).
+     * If not a winning position, null is returned.
+     */
+    get_winning_peg(x, y) {
+        if (!xy_to_coordinates(x, y) in this.pegs_by_xy) {
+            return null
+        }
+        var candidate_id = this.pegs_by_xy[xy_to_coordinates(x, y)]
+        // linked north
+        var linked_n = 0
+        for (var i = x, j = y-1; j >= 0; j--) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_n++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        // linked south
+        var linked_s = 0
+        for (var i = x, j = y + 1; j < main_board_row_count; j++) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_s++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        if (linked_s + linked_n + 1 >= winning_line_no_corner) {
+            return candidate_id
+        }
+        if (linked_s + linked_n + 1 >= winning_line_corner) {
+            if ((x == 0 || x == (main_board_column_count - 1))
+                && ((y - linked_n == 0) || (y + linked_s == main_board_row_count))) {
+                return candidate_id
+            }
+        }
+
+
+        // linked east
+        var linked_e = 0
+        for (var i = x + 1, j = y; i < main_board_column_count; i++) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_e++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        // linked west
+        var linked_w = 0
+        for (var i=x-1, j=y; i >= 0; i--) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_w++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        if (linked_e + linked_w + 1 >= winning_line_no_corner) {
+            return candidate_id
+        }
+        if (linked_e + linked_w + 1 >= winning_line_corner) {
+            if ((y == 0 || y == (main_board_row_count - 1))
+                && ((x - linked_w == 0) || (x + linked_e == (main_board_column_count-1)))) {
+                return candidate_id
+            }
+        }
+
+        // linked nw
+        var linked_nw = 0
+        for (var i = x - 1, j = y - 1; (i >= 0) && (j >= 0); i--, j--) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_nw++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        // linked se
+        var linked_se = 0
+        for (var i = x + 1, j = y + 1; (i < main_board_column_count) && (j < main_board_row_count); i++, j++) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_se++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        if (linked_nw + linked_se + 1 >= winning_line_no_corner) {
+            return candidate_id
+        }
+        if (linked_nw + linked_se + 1 >= winning_line_corner) {
+            if (((x - linked_nw == 0) || (x + linked_se == (main_board_column_count-1)))
+                    && ((y - linked_nw == 0) || (y + linked_se == (main_board_row_count-1)))) {
+                return candidate_id
+            }
+        }
+
+        // linked ne
+        var linked_ne = 0
+        for (var i = x + 1, j = y - 1; (i < main_board_column_count) && (j >= 0); i++, j--) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_ne++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        // linked sw
+        var linked_sw = 0
+        for (var i = x - 1, j = y + 1; (i >= 0) && (j < main_board_row_count); i--, j++) {
+            var cont = false
+            if (xy_to_coordinates(i, j) in this.pegs_by_xy) {
+                if (this.pegs_by_xy[xy_to_coordinates(i, j)] == candidate_id) {
+                    linked_sw++
+                    cont = true
+                }
+            }
+            if (!cont) {
+                break
+            }
+        }
+        if (linked_ne + linked_sw + 1 >= winning_line_no_corner) {
+            return candidate_id
+        }
+        if (linked_ne + linked_sw + 1 >= winning_line_corner) {
+            if (((x - linked_sw == 0) || (x + linked_ne == (main_board_column_count-1)))
+                    && ((y - linked_ne == 0) || (y + linked_sw == (main_board_row_count-1)))) {
+                return candidate_id
+            }
+        }
+
+        return null
     }
 
     /// Get the cards for all cards to be placed on the boardº1
@@ -48,6 +214,7 @@ class SequenceGame {
             }
         }
         assert(code_list.length == main_board_column_count * main_board_row_count)
+
         return code_list
     }
 
@@ -80,7 +247,13 @@ class SequenceGame {
                 code_list.push(joker_codes[j])
             }
         }
-        return code_list
+        // return code_list
+
+        var new_code_list = []
+        for (var i=0; i<code_list.length; i++) {
+            new_code_list.push("j1")
+        }
+        return new_code_list
     }
 
     /**

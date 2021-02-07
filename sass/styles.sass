@@ -133,10 +133,6 @@ label
       margin: 0px
       line-height: 120%
 
-      span.card_class_text
-        margin: 0px
-        font-size: 140%
-
     div.peg
       width: 20px
       height: 20px
@@ -344,13 +340,25 @@ div.card.joker2
   #card_selection_box.player3.active
     border-color: $player_3_color
 
+  div#trash
+    position: absolute
+    top: calc(93% - 30px)
+    left: calc(5% - 10px)
+    user-select: none
+
+    p
+      font-size: 300%
+      cursor: default
+      text-shadow: 3px 3px 3px $shadow_color
+      user-select: none
+
   #player_list_box
     @include box
     height: 9%
     width: 100%
     border: none
     margin-top: -10px
-    background: rgba(0,0,0,0)
+    background: rgba(0, 0, 0, 0)
 
     display: flex
     justify-content: center
@@ -396,3 +404,30 @@ div.card.joker2
 
       p.player_number
         color: $player_3_color
+
+  div#game_over
+    @include main_box
+    display: none
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+
+    width: 60%
+    height: calc(35%)
+
+    h1, h2, h3, div.celebration
+      width: 100%
+      text-align: center
+
+    div.celebration
+      font-size: 200%
+
+
+  div#game_over.won
+    background-color: #99ee99
+    color: #004400
+
+  div#game_over.lost
+    background-color: #ff8888
+    color: #550000

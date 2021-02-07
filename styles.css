@@ -194,9 +194,6 @@ div.card.joker2 div.card_contents {
           width: 100%;
           margin: 0px;
           line-height: 120%; }
-          #game_div #game_box div.card div.card_contents p.card_label span.card_class_text {
-            margin: 0px;
-            font-size: 140%; }
         #game_div #game_box div.card div.card_contents div.peg {
           width: 20px;
           height: 20px;
@@ -271,9 +268,6 @@ div.card.joker2 div.card_contents {
           width: 100%;
           margin: 0px;
           line-height: 120%; }
-          #game_div #card_selection_box div.card div.card_contents p.card_label span.card_class_text {
-            margin: 0px;
-            font-size: 140%; }
         #game_div #card_selection_box div.card div.card_contents div.peg {
           width: 20px;
           height: 20px;
@@ -313,6 +307,16 @@ div.card.joker2 div.card_contents {
     border-color: #90beeb; }
   #game_div #card_selection_box.player3.active {
     border-color: #fea900; }
+  #game_div div#trash {
+    position: absolute;
+    top: calc(93% - 30px);
+    left: calc(5% - 10px);
+    user-select: none; }
+    #game_div div#trash p {
+      font-size: 300%;
+      cursor: default;
+      text-shadow: 3px 3px 3px #444444;
+      user-select: none; }
   #game_div #player_list_box {
     margin: 0px;
     padding: 0px;
@@ -353,5 +357,35 @@ div.card.joker2 div.card_contents {
       border: #fea900 3px solid; }
       #game_div #player_list_box .player_box.active.player3 p.player_number {
         color: #fea900; }
+  #game_div div#game_over {
+    margin: 0px;
+    padding: 0px;
+    border: solid 5px #333333;
+    background-color: #999999;
+    box-shadow: 7px 7px 7px #444444;
+    border-color: #333333;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: middle;
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: calc(35%); }
+    #game_div div#game_over h1, #game_div div#game_over h2, #game_div div#game_over h3, #game_div div#game_over div.celebration {
+      width: 100%;
+      text-align: center; }
+    #game_div div#game_over div.celebration {
+      font-size: 200%; }
+  #game_div div#game_over.won {
+    background-color: #99ee99;
+    color: #004400; }
+  #game_div div#game_over.lost {
+    background-color: #ff8888;
+    color: #550000; }
 
 /*# sourceMappingURL=styles.css.map */
