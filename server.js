@@ -118,53 +118,37 @@ class Server extends EventEmitter {
     }
 
     process_play_card_message(server, socket, message, id) {
-        console.log("Server processing play... 0")
-        console.log(message)
-        console.log(server.id_to_player[id].hand_code_list)
-
-
         if (server.id_sequence[server.current_turn % server.id_sequence.length] != id) {
             // TODO: handle roudy player
             return
         }
-        console.log("Server processing play... 1")
         server.id_to_player[id].hand_code_list.sort()
-        console.log("[watch] message.hand_card_index=" + message.hand_card_index)
-        console.log("[watch] server.id_to_player[id].hand_code_list[message.hand_card_index]=" + server.id_to_player[id].hand_code_list[message.hand_card_index])
         var is_card_in_hand = (server.id_to_player[id].hand_code_list[message.hand_card_index] == message.card_code)
-        console.log("Server processing play... 1b")
         message.x = parseInt(message.x)
         message.y = parseInt(message.y)
         assert(message.x >= 0)
         assert(message.y >= 0)
         var player = server.id_to_player[id]
-        console.log("Server processing play... 2")
-        console.log(player)
+
         var peg_not_taken = (!(game.xy_to_coordinates_index(message.x, message.y) in server.game.pegs_by_xy))
         var card_matches = (message.card_code == server.game.card_assignment_xy[game.xy_to_coordinates_index(message.x, message.y)])
-        for (var i in game.joker_codes) {
-            if (message.card_code == game.joker_codes[i]) {
+        for (var i=0; i<game.joker_codes.length; i++) {
+            if (message.hand_card_code == game.joker_codes[i]) {
                 card_matches = true
                 break
             }
         }
-        console.log("[watch] card_matches=" + card_matches)
-        console.log("[watch] peg_not_taken=" + peg_not_taken)
-        console.log("[watch] is_card_in_hand=" + is_card_in_hand)
-        if (card_matches && peg_not_taken && is_card_in_hand) {
-            console.log("Server processing play... 3")
-            server.id_to_player[id].hand_code_list.sort()
-            // Card play is valid
-            // console.log("[watch] server.id_to_player[id].hand_code_list=" + server.id_to_player[id].hand_code_list)
-            console.log("[watch] server.id_to_player[id].hand_code_list.indexOf(message.card_code)=" + server.id_to_player[id].hand_code_list.indexOf(message.card_code))
-            server.id_to_player[id].discard_card(message.card_code)
-            console.log("joomba")
-            // console.log("[watch] server.id_to_player[id].hand_code_list=" + server.id_to_player[id].hand_code_list)
-            server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
+        if (card_matches && is_card_in_hand &&
+                ((message.hand_card_code == game.joker_remove_code) && !peg_not_taken)
+                || ((message.hand_card_code != game.joker_remove_code) && peg_not_taken)) {
+            if (message.hand_card_code != game.joker_remove_code) {
+                // Adding peg
+                server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = id
+            } else {
+                // Removing peg
+                delete server.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)]
+            }
             for (var player_id in server.id_to_player) {
-                console.log("3a")
-                console.log(server.id_to_player[player_id])
-                console.log("3b")
                 server.id_to_player[player_id].socket.sendMessage({
                     "type": "card_played",
                     "id": id,
@@ -172,22 +156,17 @@ class Server extends EventEmitter {
                     "y": message.y,
                     "hand_card_code": message.hand_card_code,
                 })
-                console.log("3c")
             }
-            console.log("Server processing play... 4")
+            server.id_to_player[id].hand_code_list.sort()
+            server.id_to_player[id].discard_card(message.card_code)
             server.deal_next_card(id)
-            console.log("Server processing play... 5")
-
 
             server.current_turn++
             server.notify_next_turn()
-            console.log("Server processing play... 6")
         } else {
             // Card not found in player's hand?!
             // TODO: send error, decide what to do with the game
         }
-        
-        console.log("Server play_card omega")
     }
 
     process_bye_message(server, socket, message, id) {
@@ -281,15 +260,11 @@ class Player {
             "type": "card_dealt",
             "card_code": card_code,
         })
-
-        console.log("PLAYER(" + this.id + "): hand_code_list=" + this.hand_code_list)
     }
 
     discard_card(card_code) {
         var index = this.hand_code_list.indexOf(card_code)
-        console.log("[watch] index=" + index)
         this.hand_code_list.splice(index, 1)
-        console.log("[watch] after discarding: this.hand_code_list=" + this.hand_code_list)
     }
 }
 

@@ -59,6 +59,7 @@ class GUI {
         this.client.on("game_ready", this.start_game.bind(this))
         this.client.on("hand_updated", this.update_hand.bind(this))
         this.client.on("peg_added", this.add_peg.bind(this))
+        this.client.on("peg_deleted", this.delete_peg.bind(this))
         this.client.on("turn_started", this.handle_turn_start_message.bind(this))
         $("#login_button").prop("disabled", true)
         $("#name_input").prop("disabled", true)
@@ -108,13 +109,13 @@ class GUI {
         $("div.player_box").hide()
         for (var i in this.id_sequence) {
             this.id_sequence[i] = parseInt(this.id_sequence[i])
-            var player_box = $("div.player_box.player"+(this.id_sequence.indexOf(this.id_sequence[i])+1))
+            var player_box = $("div.player_box.player" + (this.id_sequence.indexOf(this.id_sequence[i]) + 1))
             player_box.fadeIn()
             player_box.find("p.player_name").html(htmlSanitize(this.id_to_name[this.id_sequence[i]]))
             if (this.id_sequence[i] == this.client.player.id) {
                 player_box.find("p.player_number").html("You")
             } else {
-                player_box.find("p.player_number").html("Player " + (parseInt(i)+1))
+                player_box.find("p.player_number").html("Player " + (parseInt(i) + 1))
             }
         }
         $("#welcome_box").hide()
@@ -142,13 +143,22 @@ class GUI {
     }
 
     add_peg(x, y, id) {
+        $("#card" + game.xy_to_coordinates_index(x, y)).addClass("taken")
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("taken")
         $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").addClass("player" + (this.id_sequence.indexOf(id) + 1))
     }
 
+    delete_peg(x, y, id) {
+        $("#card" + game.xy_to_coordinates_index(x, y)).removeClass("taken")
+        $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").removeClass("taken")
+        for (var i=0; i<game.max_players; i++) {
+            $("#card" + game.xy_to_coordinates_index(x, y) + " div.peg").removeClass("player" + i)
+        }
+    }
+
     handle_turn_start_message(message) {
         $("#game_div .active").removeClass("active")
-        $("div.player_box.player" + (this.id_sequence.indexOf(message.id)+1)).addClass("active")
+        $("div.player_box.player" + (this.id_sequence.indexOf(message.id) + 1)).addClass("active")
         $("[id^=hand_]").draggable("disable")
         if (message.id == this.client.player.id) {
             $("#card_selection_box").addClass("active")
@@ -303,23 +313,21 @@ class GUI {
 
         var is_hand_card = ($(card_id).find("div.peg").length == 0)
 
-        // All card get some hover
+        // All cards get some hover
         $(card_id).hover(function () {
                 var same_cardcode
-                if (game.joker_codes.includes(card_code)) {
-                    same_cardcode = $("div.card")
+                if (card_code == game.joker_place_code) {
+                    same_cardcode = $(".card:not(.taken)")
+                } else if (card_code == game.joker_remove_code) {
+                    same_cardcode = $(".card.taken")
                 } else {
-                    same_cardcode = $(".cardcode_" + card_code)
+                    same_cardcode = $(".cardcode_" + card_code + ":not(.taken)")
                 }
                 var highlighted_count = 0
 
                 for (var i = 0; i < same_cardcode.length; i++) {
-                    if ($("#" + same_cardcode[i].id).find("div.peg").length > 0) {
-                        if ($("#" + same_cardcode[i].id).find("div.peg.taken").length == 0) {
-                            $("#" + same_cardcode[i].id).addClass("highlighted_hover")
-                            highlighted_count += 1
-                        }
-                    }
+                    $("#" + same_cardcode[i].id).addClass("highlighted_hover")
+                    highlighted_count += 1
                 }
 
                 if (is_hand_card) {
@@ -338,7 +346,7 @@ class GUI {
             })
 
         if (is_hand_card) {
-            // Hand cards become draggable
+            // Hand cards get the draggable listener, although it starts disabled
             $(card_id).draggable({
                 start: function () {
 
@@ -350,20 +358,23 @@ class GUI {
                     }, 250);
                 },
             })
+            $(card_id).draggable("disable")
         } else {
             // Board cards become droppable
             $(card_id).droppable({
                 drop: function (event, ui) {
                     var cls = "cardcode_" + card_code
-                    var draggable_is_joker = false
-                    for (var i in game.joker_codes) {
-                        if (ui.draggable.hasClass("cardcode_" + game.joker_codes[i])) {
-                            draggable_is_joker = true
-                            break
-                        }
+                    var play_card = false
+                    if ((ui.draggable.hasClass("cardcode_"+ game.joker_remove_code))
+                            && ($(card_id).find("div.peg.taken").length == 1)) {
+                        // TODO: remove everywhere, notify
+                        play_card = true
+                    } else if (($(card_id).find("div.peg.taken").length == 0)
+                            && (ui.draggable.hasClass(cls)
+                                || ui.draggable.hasClass("cardcode_" +  game.joker_place_code))) {
+                        play_card = true
                     }
-                    console.log("[watch] draggable_is_joker=" + draggable_is_joker)
-                    if ((ui.draggable.hasClass(cls) || draggable_is_joker) && ($(card_id).find("div.peg.taken").length == 0)) {
+                    if (play_card) {
                         var parts = card_id.replace("#card", "").split(game.coordinate_delimiter)
                         var x = parts[0]
                         var y = parts[1]

@@ -55,23 +55,25 @@ class Client extends EventEmitter {
 
     // Play a card on the given (x,y) coordinate of the board, using a card with card_code from this player's hand
     play_card(x, y, card_code, hand_card_index) {
-        console.log("moooo!")
+        var peg_placed = (game.xy_to_coordinates_index(x, y) in this.game.pegs_by_xy)
+        var hand_card_code = this.player.hand_code_list[hand_card_index]
+        if (hand_card_code == game.joker_remove_code) {
+            assert(peg_placed)
+        } else {
+            assert(!peg_placed)
+        }
 
-        assert(!((game.xy_to_coordinates_index(x, y)) in this.game.pegs_by_xy))
         this.player.hand_code_list.sort()
         var msg = {
             "type": "play_card",
             "x": x, "y": y,
             "hand_card_codes": this.player.hand_code_list,
             "hand_card_index": hand_card_index,
+            "hand_card_code": hand_card_code,
             "card_code": this.player.hand_code_list[hand_card_index]}
         this.socket.sendMessage(msg)
-        console.log(this.player)
-        console.log("splicing card_index=" + hand_card_index)
         this.player.hand_code_list.splice(parseInt(hand_card_index), 1)
         this.emit("hand_updated", this.player.hand_code_list)
-
-        console.log("moooo omega!")
     }
 
     handle_logged_message(client, player, message) {
@@ -100,9 +102,16 @@ class Client extends EventEmitter {
 
     handle_card_played_message(client, player, message) {
         assert(client.status == STATE_PLAYING)
-        assert(!(game.xy_to_coordinates_index(message.x, message.y) in client.game.pegs_by_xy))
-        client.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = message.id
-        this.emit("peg_added", message.x, message.y, message.id)
+        // var hand_card_code = player.hand_card_index[message.hand_card_index]
+        if (message.hand_card_code == game.joker_remove_code) {
+            assert((game.xy_to_coordinates_index(message.x, message.y) in client.game.pegs_by_xy))
+            delete client.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)]
+            this.emit("peg_deleted", message.x, message.y, message.id)
+        } else {
+            assert(!(game.xy_to_coordinates_index(message.x, message.y) in client.game.pegs_by_xy))
+            client.game.pegs_by_xy[game.xy_to_coordinates_index(message.x, message.y)] = message.id
+            this.emit("peg_added", message.x, message.y, message.id)
+        }
     }
 
     handle_wait_message(client, player, message) {
