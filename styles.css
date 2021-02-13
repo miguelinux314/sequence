@@ -37,14 +37,14 @@ label {
     color: #333333; }
   #main_container button {
     border-radius: 15px;
-    background-color: #bbbbbb; }
+    background-color: #88ffaa; }
   #main_container button:active {
     background-color: #ffffff; }
   #main_container button:focus {
     outline: 0px; }
   #main_container button:disabled {
     background-color: #333333;
-    color: #bbbbbb; }
+    color: darkred; }
 
 div.card.hearts div.card_contents, div.card.diamonds div.card_contents {
   border-color: #bb0000; }
@@ -376,10 +376,10 @@ div.card.joker2 div.card_contents {
     transform: translate(-50%, -50%);
     width: 60%;
     height: calc(35%); }
-    #game_div div#game_over h1, #game_div div#game_over h2, #game_div div#game_over h3, #game_div div#game_over div.celebration {
+    #game_div div#game_over h1, #game_div div#game_over h2, #game_div div#game_over h3, #game_div div#game_over div.celebration, #game_div div#game_over div.commiseration {
       width: 100%;
       text-align: center; }
-    #game_div div#game_over div.celebration {
+    #game_div div#game_over div.celebration, #game_div div#game_over div.commiseration {
       font-size: 200%; }
   #game_div div#game_over.won {
     background-color: #99ee99;
@@ -387,5 +387,46 @@ div.card.joker2 div.card_contents {
   #game_div div#game_over.lost {
     background-color: #ff8888;
     color: #550000; }
+
+div#ip {
+  margin: 0px;
+  padding: 0px;
+  border: solid 5px #333333;
+  background-color: #999999;
+  box-shadow: 7px 7px 7px #444444;
+  border-color: #333333;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  margin-left: auto;
+  margin-right: auto;
+  vertical-align: middle;
+  border-color: #3333ff;
+  border-radius: 5px;
+  position: absolute;
+  top: 82%;
+  height: 14%;
+  width: 60%;
+  background: #4488ee;
+  color: #333333;
+  padding: 10px;
+  vertical-align: middle;
+  display: table; }
+  div#ip div.row {
+    display: table-row;
+    height: 100%; }
+    div#ip div.row p, div#ip div.row input {
+      display: table-cell; }
+    div#ip div.row p#public_ip, div#ip div.row p#private_ip {
+      width: 60%; }
+    div#ip div.row input {
+      color: #3333ff;
+      background-color: #aaaaff;
+      border: 3px #3333ff solid;
+      border-radius: 10px;
+      box-shadow: 7px 7px 7px #444444; }
+    div#ip div.row input:hover {
+      background-color: #ddddff; }
+    div#ip div.row input:focus {
+      outline: none; }
 
 /*# sourceMappingURL=styles.css.map */

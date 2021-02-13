@@ -17,7 +17,7 @@ app.once('ready', () => {
     webPreferences: {nodeIntegration: true},
   })
 
-  // window.setMenu(null)
+  window.setMenu(null)
 
   // Load a URL in the window to the local index.html path
   window.loadURL(url.format({

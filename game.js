@@ -77,7 +77,7 @@ class SequenceGame {
         }
         if (linked_s + linked_n + 1 >= winning_line_corner) {
             if ((x == 0 || x == (main_board_column_count - 1))
-                && ((y - linked_n == 0) || (y + linked_s == main_board_row_count))) {
+                && ((y - linked_n == 0) || (y + linked_s == (main_board_row_count - 1)))) {
                 return candidate_id
             }
         }
@@ -247,13 +247,7 @@ class SequenceGame {
                 code_list.push(joker_codes[j])
             }
         }
-        // return code_list
-
-        var new_code_list = []
-        for (var i=0; i<code_list.length; i++) {
-            new_code_list.push("j1")
-        }
-        return new_code_list
+        return code_list
     }
 
     /**

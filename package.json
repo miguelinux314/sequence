@@ -1,17 +1,19 @@
 {
   "name": "sequence",
-  "version": "0.0.1",
-  "description": "Homebrew implementation of the card game Sequence",
+  "version": "1.0.0",
+  "description": "Homebrew implementation of the card game Sequence using electron",
   "main": "app.js",
   "dependencies": {
+    "copy-to-clipboard": "*",
+    "electron": ">=11.0.0",
     "electron-packager": "^15.2.0",
+    "jquery": ">=3.5.0",
+    "jquery-ui": ">=1.12.1",
     "json-socket": "*",
+    "public-ip": "*",
     "sanitize-html": "^2.3.0",
     "vue": "^2.6.12",
-    "vue-cli": "^2.9.6",
-    "electron": ">=11.0.0",
-    "jquery": ">=3.5.0",
-    "jquery-ui": ">=1.12.1"
+    "vue-cli": "^2.9.6"
   },
   "devDependencies": {
     "electron": ">=11.0.0",

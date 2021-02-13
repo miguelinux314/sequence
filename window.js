@@ -3,7 +3,7 @@
 var sequence_gui = require("./gui.js")
 
 // Configuration
-const quick_start = true
+const quick_start = false
 // END configuration
 
 var gui = new sequence_gui.GUI()

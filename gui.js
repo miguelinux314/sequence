@@ -10,7 +10,9 @@ var assert = require("assert")
 var game = require("./game.js")
 var server = require("./server.js")
 var client = require("./client.js")
+var address = require("./address.js")
 var htmlSanitize = require('sanitize-html')
+var copy_to_clipboard = require('copy-to-clipboard')
 
 const STATE_NOT_STARTED = 0
 const STATE_WELCOME = 1
@@ -26,6 +28,7 @@ class GUI {
     }
 
     start() {
+        $("html").hide()
         this.status = STATE_WELCOME
 
         this.add_main_card_slots()
@@ -47,6 +50,35 @@ class GUI {
 
         this.host_form_changed()
         this.login_form_changed()
+
+        $("div#ip").html("")
+        setTimeout(this.setIPAddresses.bind(this), 0)
+
+        $("html").fadeIn()
+    }
+
+    async setIPAddresses() {
+        $("div#ip").html(
+            "<div class='row'>" +
+                "<p><strong>Public ip</strong>:<p>" +
+                "<p id='public_ip'>" + await address.get_public_ip() + "</p>" +
+                "<input type='button' id='copy_public_ip' value='Copy'>" +
+            "</div>\n"+
+            "<div class='row'>" +
+                "<p><strong>Private ip</strong>:<p>" +
+                "<p id='private_ip'>" + await address.get_private_ip() + "</p>" +
+                "<input type='button' id='copy_private_ip' value='Copy'>" +
+            "</div>\n"
+        )
+        $("div#ip").show()
+        $("#copy_public_ip").click(function () {
+            console.log("[watch] clip=" + copy_to_clipboard)
+            console.log(copy_to_clipboard)
+            copy_to_clipboard($("p#public_ip").html())
+        })
+        $("#copy_private_ip").click(function () {
+            copy_to_clipboard($("p#private_ip").html())
+        })
     }
 
     click_welcome_login_button() {
@@ -99,6 +131,8 @@ class GUI {
     }
 
     handle_game_ready_event(game_started_message) {
+        $("div#ip").fadeOut()
+
         if (this.game == null) {
             this.game = new game.SequenceGame(game_started_message.card_assignment_xy)
         }
@@ -179,6 +213,29 @@ class GUI {
         $("#game_over").addClass("won")
         $("#game_over").fadeIn()
         $("#game_over .message").html("You WON!!")
+        $(".commiseration").hide()
+        $(".celebration").fadeIn()
+        this.bounce_celebration()
+    }
+
+    bounce_celebration() {
+        $(".celebration").html("")
+        var notes = ["🎶", "🎵"]
+        console.log("[watch] notes=" + notes)
+        console.log("[watch] Math.floor(4 + Math.random() * 6)=" + Math.floor(4 + Math.random() * 6))
+        var s = ""
+        var note_count = Math.floor(4 + Math.random() * 3)
+        for (var i=0; i<note_count; i++) {
+            var note_index = Math.floor(1 + Math.random() * 65535) % 2
+            console.log("[watch] note_index=" + note_index)
+            console.log(s)
+            s += "<span id='celebration" + i + "'>"
+            s += notes[note_index]
+            s +="</span>"
+        }
+        $(".celebration").html(s)
+
+        $(".celebration").delay(1000).toggle("bounce", {times: 4}, "slow").delay(750).toggle("bounce", {times: 2}, "slow")
     }
 
     handle_game_lost_event() {
@@ -186,6 +243,8 @@ class GUI {
         $("#game_over").addClass("lost")
         $("#game_over").fadeIn()
         $("#game_over .message").html("You lost...")
+        $(".commiseration").fadeIn();
+        $(".celebration").hide();
     }
 
     handle_players_changed_message(id_to_player) {

@@ -71,7 +71,7 @@ label
 
   button
     border-radius: 15px
-    background-color: $first_bg_color
+    background-color: #88ffaa
 
   button:active
     background-color: $card_highligh_bg_color
@@ -81,7 +81,7 @@ label
 
   button:disabled
     background-color: $first_fg_color
-    color: $first_bg_color
+    color: darkred
 
 @mixin box
   margin: 0px
@@ -416,11 +416,11 @@ div.card.joker2
     width: 60%
     height: calc(35%)
 
-    h1, h2, h3, div.celebration
+    h1, h2, h3, div.celebration, div.commiseration
       width: 100%
       text-align: center
 
-    div.celebration
+    div.celebration, div.commiseration
       font-size: 200%
 
 
@@ -431,3 +431,41 @@ div.card.joker2
   div#game_over.lost
     background-color: #ff8888
     color: #550000
+
+div#ip
+  @include main_box
+  border-color: #3333ff
+  border-radius: 5px
+  position: absolute
+  top: 82%
+  height: 14%
+  width: 60%
+  background: $second_fg_color
+  color: $first_fg_color
+
+  padding: 10px
+  vertical-align: middle
+  display: table
+
+  div.row
+    display: table-row
+    height: 100%
+
+    p, input
+      display: table-cell
+
+    p#public_ip, p#private_ip
+      width: 60%
+
+    input
+      color: #3333ff
+      background-color: #aaaaff
+      border: 3px #3333ff solid
+      border-radius: 10px
+      @include box-shadow
+
+    input:hover
+      background-color: #ddddff
+
+    input:focus
+      outline: none
